@@ -137,7 +137,7 @@ export default function ButtonAppBar () {
               </Box>
             </Modal>
           </div>
-          <Grid container>
+          <Grid container style={{ overflow: 'scroll', height: '75vh' }}>
             {
             rooms.map((room, index) => {
               return (
