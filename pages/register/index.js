@@ -89,7 +89,7 @@ export default function Pages () {
       }
     })
     if (response.is_success) {
-      Router.push('/home')
+      Router.push('/login')
     } else {
       setAlert(true)
       setAlertContent('Register Fail')

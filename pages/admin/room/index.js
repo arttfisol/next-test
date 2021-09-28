@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Grid, Button, Typography, Box, Modal, FormControl, Stack, InputLabel, OutlinedInput } from '@mui/material'
+import { Grid, Button, Typography, Box, Modal, FormControl, Stack, InputLabel, OutlinedInput, Snackbar, Alert } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import Menu from '../../../components/menu'
 import axios from 'axios'
+import Router from 'next/router'
 import { forEach } from 'lodash'
 import RoomContainer from '../../../components/roomContainer'
+
 export default function ButtonAppBar () {
   const [rooms, setRooms] = useState([])
   const [addRoom, setAddRoom] = useState({
@@ -23,6 +25,15 @@ export default function ButtonAppBar () {
   const [openDel, setOpenDel] = useState(false)
   const handleOpenDel = () => setOpenDel(true)
   const handleCloseDel = () => setOpenDel(false)
+
+  const [alert, setAlert] = useState(false)
+  const [alertContent, setAlertContent] = useState('')
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setAlert(false)
+  }
 
   useEffect(async () => {
     const resRooms = await axios('/api/rooms')
@@ -45,6 +56,28 @@ export default function ButtonAppBar () {
     p: 4
   }
 
+  const submitForm = async () => {
+    if (addRoom.room_number === '' || addRoom.room_type === '' || addRoom.room_price === 0) {
+      setAlert(true)
+      setAlertContent('Must Fill All Fields')
+      return
+    }
+    const response = await axios('/api/room', {
+      method: 'POST',
+      data: {
+        room_number: addRoom.room_number,
+        room_type: addRoom.room_type,
+        room_price: addRoom.room_price
+      }
+    })
+    if (response.is_success) {
+      Router.push('/admin/room')
+    } else {
+      setAlert(true)
+      setAlertContent('Something Went Wrong!')
+    }
+  }
+
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
       <div style={{ width: '100%', height: '10%' }} />
@@ -64,11 +97,9 @@ export default function ButtonAppBar () {
             >
               <Box sx={style}>
                 <Stack
-                  component='form'
                   spacing={2}
                   noValidate
                   autoComplete='off'
-                //   onSubmit={}
                 >
                   <center>
                     <Typography variant='h5' gutterBottom>
@@ -112,6 +143,7 @@ export default function ButtonAppBar () {
                     type='submit'
                     variant='contained'
                     size='large'
+                    onClick={submitForm}
                   >
                     Add
                   </Button>
@@ -154,6 +186,11 @@ export default function ButtonAppBar () {
           </Grid>
         </Grid>
       </Grid>
+      <Snackbar open={alert} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity='error' sx={{ width: '100%' }}>
+          {alertContent}
+        </Alert>
+      </Snackbar>
     </div>
   )
 }

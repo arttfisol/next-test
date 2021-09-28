@@ -13,6 +13,7 @@ export default function Pages () {
   })
 
   const [alert, setAlert] = useState(false)
+  const [alertContent, setAlertContent] = useState('')
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return
@@ -36,6 +37,12 @@ export default function Pages () {
   }
 
   const submitForm = async () => {
+    if (values.email === '' || values.password === '') {
+      setAlert(true)
+      setAlertContent('Must Fill All Fields')
+      return
+    }
+
     const response = await axios('/api/login', {
       method: 'POST',
       data: {
@@ -47,6 +54,7 @@ export default function Pages () {
       Router.push('/home')
     } else {
       setAlert(true)
+      setAlertContent('Email or Password Wrong!')
     }
   }
   return (
@@ -118,7 +126,7 @@ export default function Pages () {
       </Paper>
       <Snackbar open={alert} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity='error' sx={{ width: '100%' }}>
-          Email or Password Wrong!
+          {alertContent}
         </Alert>
       </Snackbar>
     </div>

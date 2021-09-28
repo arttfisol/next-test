@@ -57,6 +57,10 @@ appNext.prepare().then(async () => {
     res.json({ is_success: !!regis })
   })
 
+  app.post('/api/room', async (req, res) => {
+    //
+  })
+
   app.get('*', (req, res) => {
     return handle(req, res)
   })
