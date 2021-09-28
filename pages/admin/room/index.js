@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Grid, Button, Typography, Box, Modal, FormControl, Stack, InputLabel, OutlinedInput } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
+import AddIcon from '@mui/icons-material/Add'
 import Menu from '../../../components/menu'
 import axios from 'axios'
 import { forEach } from 'lodash'
@@ -52,7 +53,7 @@ export default function ButtonAppBar () {
         <Grid item xs={1} />
         <Grid item xs={8}>
           <div style={{ width: '100%', height: '10%' }}>
-            <Button variant='outlined' onClick={handleOpenAdd} startIcon={<DeleteIcon />} style={{ margin: '1%' }}>
+            <Button variant='outlined' onClick={handleOpenAdd} startIcon={<AddIcon />} style={{ margin: '1%' }}>
               Add Room
             </Button>
             <Modal
