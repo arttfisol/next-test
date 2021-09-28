@@ -1,22 +1,35 @@
 
 import { useState } from 'react'
-import { Stack, Button, Paper, InputLabel, OutlinedInput, FormControl, InputAdornment, IconButton, Typography, Link, TextField } from '@mui/material'
+import { Stack, Button, Paper, InputLabel, OutlinedInput, FormControl, InputAdornment, IconButton, Typography, Link, TextField, Alert, Snackbar } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { DatePicker, LocalizationProvider } from '@mui/lab'
 import AdapterDayJS from '@mui/lab/AdapterDayJS'
+import Router from 'next/router'
+import axios from 'axios'
 
 export default function Pages () {
   const [values, setValues] = useState({
     email: '',
     username: '',
-    firstname: '',
-    lastname: '',
+    fname: '',
+    lname: '',
+    tel: '',
     password: '',
-    cpassowrd: '',
-    birthdate: '',
-    showPassword: false,
-    showCPassword: false
+    cpassword: '',
+    birth: ''
   })
+  const [showPassword, setShowPassword] = useState(false)
+  const [showCPassword, setShowCPassword] = useState(false)
+
+  const [alert, setAlert] = useState(false)
+  const [alertContent, setAlertContent] = useState('')
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setAlert(false)
+  }
 
   const handleChange = (prop) => (event) => {
     setValues({
@@ -32,36 +45,64 @@ export default function Pages () {
     } catch (err) {}
   }
 
-  const handleClickShowPassword = () => {
-    setValues({
-      ...values,
-      showPassword: !values.showPassword
-    })
-  }
-  const handleClickShowCPassword = () => {
-    setValues({
-      ...values,
-      showCPassword: !values.showCPassword
-    })
-  }
-
   const handleMouseDownPassword = (event) => {
     event.preventDefault()
   }
   const handleMouseDownCPassword = (event) => {
     event.preventDefault()
   }
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword)
+  }
+  const handleClickShowCPassword = () => {
+    setShowCPassword(!showCPassword)
+  }
 
-  const submitForm = () => {}
+  const submitForm = async () => {
+    // check empty
+    console.log('values ', values)
+    for (const prop in values) {
+      if (values[prop] === '') {
+        setAlert(true)
+        setAlertContent('Must Fill All Fields')
+        return
+      }
+    }
+
+    // check password and cpassword
+    if (values.password !== values.cpassword) {
+      setAlert(true)
+      setAlertContent('Password Not Equal to Confirm Password')
+      return
+    }
+
+    const response = await axios('/api/register', {
+      method: 'POST',
+      data: {
+        fname: values.firstname,
+        lname: values.lastname,
+        tel: values.telephone,
+        birth: new Date(values.birthdate),
+        email: values.email,
+        password: values.password,
+        cpassword: values.cpassowrd
+      }
+    })
+    if (response.is_success) {
+      Router.push('/home')
+    } else {
+      setAlert(true)
+      setAlertContent('Register Fail')
+    }
+  }
+
   return (
     <div style={{ backgroundImage: 'url("bg1.jpeg")', width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center' }}>
       <Paper elevation={16} style={{ padding: '2.2% 5%', width: '17%', height: '87%', marginTop: '1%' }}>
         <Stack
-          component='form'
           spacing={2}
           noValidate
           autoComplete='off'
-          onSubmit={submitForm}
         >
           <center>
             <img src='mv.png' style={{ paddingBottom: '10px' }} />
@@ -71,23 +112,23 @@ export default function Pages () {
           </center>
 
           <FormControl variant='outlined'>
-            <InputLabel htmlFor='input-firstname'>First Name</InputLabel>
+            <InputLabel htmlFor='input-fname'>First Name</InputLabel>
             <OutlinedInput
-              id='input-firstname'
+              id='input-fname'
               type='text'
-              value={values.firstname}
-              onChange={handleChange('firstname')}
+              value={values.fname}
+              onChange={handleChange('fname')}
               label='First Name'
             />
           </FormControl>
 
           <FormControl variant='outlined'>
-            <InputLabel htmlFor='input-lastname'>Last Name</InputLabel>
+            <InputLabel htmlFor='input-lname'>Last Name</InputLabel>
             <OutlinedInput
-              id='input-lastname'
+              id='input-lname'
               type='text'
-              value={values.lastname}
-              onChange={handleChange('lastname')}
+              value={values.lname}
+              onChange={handleChange('lname')}
               label='Last Name'
             />
           </FormControl>
@@ -107,8 +148,8 @@ export default function Pages () {
             <DatePicker
               disableFuture
               label='Birthdate'
-              value={values.birthdate}
-              onChange={handleDateChange('birthdate')}
+              value={values.birth}
+              onChange={handleDateChange('birth')}
               renderInput={(params) => <TextField {...params} />}
             />
           </LocalizationProvider>
@@ -139,7 +180,7 @@ export default function Pages () {
             <InputLabel htmlFor='input-password'>Password</InputLabel>
             <OutlinedInput
               id='input-password'
-              type={values.showPassword ? 'text' : 'password'}
+              type={showPassword ? 'text' : 'password'}
               value={values.password}
               onChange={handleChange('password')}
               endAdornment={
@@ -162,7 +203,7 @@ export default function Pages () {
             <InputLabel htmlFor='input-cpassword'>Confirm Password</InputLabel>
             <OutlinedInput
               id='input-cpassword'
-              type={values.showCPassword ? 'text' : 'password'}
+              type={showCPassword ? 'text' : 'password'}
               value={values.cpassword}
               onChange={handleChange('cpassword')}
               endAdornment={
@@ -186,6 +227,7 @@ export default function Pages () {
             variant='contained'
             color='error'
             size='large'
+            onClick={submitForm}
           >
             Submit
           </Button>
@@ -199,6 +241,11 @@ export default function Pages () {
           </center>
         </Stack>
       </Paper>
+      <Snackbar open={alert} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity='error' sx={{ width: '100%' }}>
+          {alertContent}
+        </Alert>
+      </Snackbar>
     </div>
   )
 }

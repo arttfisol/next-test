@@ -1,6 +1,6 @@
 
 import { useState } from 'react'
-import { Stack, Button, Paper, InputLabel, OutlinedInput, FormControl, InputAdornment, IconButton, Typography, Link } from '@mui/material'
+import { Stack, Button, Paper, InputLabel, OutlinedInput, FormControl, InputAdornment, IconButton, Typography, Link, Alert, Snackbar } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import Router from 'next/router'
 import axios from 'axios'
@@ -11,6 +11,14 @@ export default function Pages () {
     password: '',
     showPassword: false
   })
+
+  const [alert, setAlert] = useState(false)
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setAlert(false)
+  }
 
   const handleChange = (prop) => (event) => {
     setValues({ ...values, [prop]: event.target.value })
@@ -37,17 +45,17 @@ export default function Pages () {
     })
     if (response.is_success) {
       Router.push('/home')
+    } else {
+      setAlert(true)
     }
   }
   return (
     <div style={{ backgroundImage: 'url("bg1.jpeg")', width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center' }}>
       <Paper elevation={16} style={{ padding: '5%', width: '15%', height: '40%', marginTop: '10%' }}>
         <Stack
-          component='form'
           spacing={2}
           noValidate
           autoComplete='off'
-          onSubmit={submitForm}
         >
           <center>
             <img src='mv.png' style={{ paddingBottom: '10px' }} />
@@ -93,6 +101,7 @@ export default function Pages () {
             variant='contained'
             color='error'
             size='large'
+            onClick={submitForm}
           >
             Login
           </Button>
@@ -104,8 +113,14 @@ export default function Pages () {
               </Link>
             </Typography>
           </center>
+
         </Stack>
       </Paper>
+      <Snackbar open={alert} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity='error' sx={{ width: '100%' }}>
+          Email or Password Wrong!
+        </Alert>
+      </Snackbar>
     </div>
   )
 }

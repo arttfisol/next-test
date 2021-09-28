@@ -47,6 +47,16 @@ appNext.prepare().then(async () => {
     res.json({ is_success: true })
   })
 
+  app.post('/api/register', async (req, res) => {
+    const body = req.body
+    const user = await sql.query(`SELECT * FROM users WHERE username=${body.username}' OR email=${body.email}`)
+    if (user.length) {
+      res.json({ is_success: false })
+    }
+    const regis = await sql.query(`INSERT INTO users VALUES ('', ${body.fname}, ${body.lname}, ${body.tel}, ${body.username}, ${body.email}, ${body.password})`)
+    res.json({ is_success: !!regis })
+  })
+
   app.get('*', (req, res) => {
     return handle(req, res)
   })
