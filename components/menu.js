@@ -1,6 +1,8 @@
 import { Grid, List, ListItemButton, ListItemIcon, ListItemText, Divider } from '@mui/material'
-import DraftsIcon from '@mui/icons-material/Drafts'
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'
 import InboxIcon from '@mui/icons-material/Inbox'
+import DashboardIcon from '@mui/icons-material/Dashboard'
+import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 
 export default function Menu ({ number, type, price }) {
   return (
@@ -16,9 +18,23 @@ export default function Menu ({ number, type, price }) {
         <Divider />
         <ListItemButton component='a' href='/admin/book'>
           <ListItemIcon>
-            <DraftsIcon />
+            <BookmarkAddIcon />
           </ListItemIcon>
           <ListItemText primary='Book' />
+        </ListItemButton>
+        <Divider />
+        <ListItemButton component='a'>
+          <ListItemIcon>
+            <DashboardIcon />
+          </ListItemIcon>
+          <ListItemText primary='Dashboard' />
+        </ListItemButton>
+        <Divider />
+        <ListItemButton component='a'>
+          <ListItemIcon>
+            <ManageAccountsIcon />
+          </ListItemIcon>
+          <ListItemText primary='Manage' />
         </ListItemButton>
       </List>
       <Divider />
