@@ -62,59 +62,57 @@ export default function ButtonAppBar () {
   }
 
   const submitAddForm = async () => {
-    if (addRoom.room_number === '' || addRoom.room_type === '' || addRoom.room_price === 0) {
-      setAlert(true)
-      setAlertContent('Must Fill All Fields')
-      return
-    }
-    const response = await axios('/api/room', {
-      method: 'POST',
-      data: {
-        room_number: addRoom.room_number,
-        room_type: addRoom.room_type,
-        room_price: addRoom.room_price
+    try {
+      if (addRoom.room_number === '' || addRoom.room_type === '' || addRoom.room_price === 0) {
+        setAlert(true)
+        setAlertContent('Must Fill All Fields')
+        return
       }
-    })
-    if (response.is_success) {
-      Router.push('/admin/room')
-    } else {
+      let response = await axios('/api/room', {
+        method: 'POST',
+        data: {
+          room_number: addRoom.room_number,
+          room_type: addRoom.room_type,
+          room_price: addRoom.room_price
+        }
+      })
+      response = response.data
+      if (response.is_success) {
+        Router.push('/admin/room')
+      } else {
+        setAlert(true)
+        setAlertContent(response.data ? response.data : 'Something Went Wrong!')
+      }
+    } catch (err) {
       setAlert(true)
       setAlertContent('Something Went Wrong!')
-      return
     }
-    // query again
-    const resRooms = await axios('/api/rooms')
-    setRooms([])
-    await forEach(resRooms.data, element => {
-      setRooms(previousRooms => [...previousRooms, element])
-    })
   }
 
   const submitDelForm = async () => {
-    if (delRoom === '') {
-      setAlert(true)
-      setAlertContent('Please Select One')
-      return
-    }
-    const response = await axios('/api/room', {
-      method: 'DELETE',
-      data: {
-        room_number: addRoom.room_number
+    try {
+      if (delRoom === '') {
+        setAlert(true)
+        setAlertContent('Please Select One')
+        return
       }
-    })
-    if (response.is_success) {
-      Router.push('/admin/room')
-    } else {
+      let response = await axios('/api/room', {
+        method: 'DELETE',
+        data: {
+          room_number: addRoom.room_number
+        }
+      })
+      response = response.data
+      if (response.is_success) {
+        Router.push('/admin/room')
+      } else {
+        setAlert(true)
+        setAlertContent(response.data ? response.data : 'Something Went Wrong!')
+      }
+    } catch (err) {
       setAlert(true)
       setAlertContent('Something Went Wrong!')
-      return
     }
-    // query again
-    const resRooms = await axios('/api/rooms')
-    setRooms([])
-    await forEach(resRooms.data, element => {
-      setRooms(previousRooms => [...previousRooms, element])
-    })
   }
 
   return (

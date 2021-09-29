@@ -37,27 +37,33 @@ export default function Pages () {
   }
 
   const submitForm = async () => {
-    if (values.email === '' || values.password === '') {
-      setAlert(true)
-      setAlertContent('Must Fill All Fields')
-      return
-    }
+    try {
+      if (values.email === '' || values.password === '') {
+        setAlert(true)
+        setAlertContent('Must Fill All Fields')
+        return
+      }
 
-    const response = await axios('/api/login', {
-      method: 'POST',
-      data: {
-        email: values.email,
-        password: values.password
+      let response = await axios('/api/login', {
+        method: 'POST',
+        data: {
+          email: values.email,
+          password: values.password
+        }
+      })
+      response = response.data
+      if (response.is_success) {
+        if (values.email === 'test@gmail.com') {
+          Router.push('/admin/room')
+        }
+        Router.push('/home')
+      } else {
+        setAlert(true)
+        setAlertContent(response.data ? response.data : 'Something Went Wrong!')
       }
-    })
-    if (response.is_success) {
-      if (values.email === 'admin@gmail.com') {
-        Router.push('/admin/room')
-      }
-      Router.push('/home')
-    } else {
+    } catch (err) {
       setAlert(true)
-      setAlertContent('Email or Password Wrong!')
+      setAlertContent('Something Went Wrong!')
     }
   }
   return (

@@ -59,40 +59,46 @@ export default function Pages () {
   }
 
   const submitForm = async () => {
+    try {
     // check empty
-    console.log('values ', values)
-    for (const prop in values) {
-      if (values[prop] === '') {
+      console.log('values ', values)
+      for (const prop in values) {
+        if (values[prop] === '') {
+          setAlert(true)
+          setAlertContent('Must Fill All Fields')
+          return
+        }
+      }
+
+      // check password and cpassword
+      if (values.password !== values.cpassword) {
         setAlert(true)
-        setAlertContent('Must Fill All Fields')
+        setAlertContent('Password Not Equal to Confirm Password')
         return
       }
-    }
 
-    // check password and cpassword
-    if (values.password !== values.cpassword) {
-      setAlert(true)
-      setAlertContent('Password Not Equal to Confirm Password')
-      return
-    }
-
-    const response = await axios('/api/register', {
-      method: 'POST',
-      data: {
-        fname: values.firstname,
-        lname: values.lastname,
-        tel: values.telephone,
-        birth: new Date(values.birthdate),
-        email: values.email,
-        password: values.password,
-        cpassword: values.cpassowrd
+      let response = await axios('/api/register', {
+        method: 'POST',
+        data: {
+          fname: values.firstname,
+          lname: values.lastname,
+          tel: values.telephone,
+          birth: new Date(values.birthdate),
+          email: values.email,
+          password: values.password,
+          cpassword: values.cpassowrd
+        }
+      })
+      response = response.data
+      if (response.is_success) {
+        Router.push('/login')
+      } else {
+        setAlert(true)
+        setAlertContent(response.data ? response.data : 'Something Went Wrong!')
       }
-    })
-    if (response.is_success) {
-      Router.push('/login')
-    } else {
+    } catch (err) {
       setAlert(true)
-      setAlertContent('Register Fail')
+      setAlertContent('Something Went Wrong!')
     }
   }
 

@@ -31,60 +31,116 @@ appNext.prepare().then(async () => {
   })
 
   app.get('/api/hotels', (req, res) => {
-    res.json(require('./json/hotel.json'))
-  })
-
-  app.get('/api/rooms', (req, res) => {
-    res.json(require('./json/room.json'))
-  })
-
-  app.post('/api/login', async (req, res) => {
     try {
-      const body = req.body
-      const user = await sql.query(`SELECT * FROM user WHERE email = '${body.email}' AND password = '${md5(body.password)}'`)
-      if (!user.length) {
-        res.json({ is_success: false })
-      }
-      res.json({ is_success: true })
+      res.json({
+        is_success: true,
+        data: require('./json/hotel.json')
+      })
     } catch (err) {
-      res.json({ is_success: false })
+      res.json({
+        is_success: false,
+        data: err.message
+      })
     }
   })
 
-  app.post('/api/register', async (req, res) => {
+  app.get('/api/rooms', async (req, res) => {
     try {
-      const body = req.body
-      const user = await sql.query(`SELECT * FROM users WHERE username = '${body.username}' OR email = '${body.email}'`)
-      if (user.length) {
-        res.json({ is_success: false })
-      }
-      const regis = await sql.query(`INSERT INTO users VALUES ('', '${body.fname}', '${body.lname}', '${body.tel}', '${body.username}', '${body.email}', '${body.password}')`)
-      res.json({ is_success: !!regis })
+      await sql.query('SELECT * FROM room', (err, results) => {
+        if (err) throw err
+        res.json({
+          is_success: true,
+          data: results
+        })
+      })
     } catch (err) {
-      res.json({ is_success: false })
+      res.json({
+        is_success: false,
+        data: err.message
+      })
     }
   })
 
-  app.post('/api/room', async (req, res) => {
+  app.post('/api/login', (req, res) => {
     try {
       const body = req.body
-      const room = await sql.query(`SELECT * FROM users WHERE room_number='${body.room_number}'`)
-      if (room.length) {
-        console.log('room already exists')
-        res.json({ is_success: false })
-      }
-      res.json({ is_success: false })
-      const insertRoom = await sql.query(`INSERT INTO rooms VALUES ('', '${body.room_number}', '${body.room_type}', ${body.room_price})`)
-      res.json({ is_success: !!insertRoom })
+
+      sql.query(`SELECT * FROM users WHERE email = '${body.email}' AND password = '${md5(body.password)}'`, (err, results) => {
+        if (err) throw err
+        if (!results.length) {
+          res.json({ is_success: false })
+        }
+        res.json({ is_success: true })
+      })
     } catch (err) {
-      res.json({ is_success: false })
+      res.json({
+        is_success: false,
+        data: err.message
+      })
     }
   })
 
-  app.delete('/api/room', async (req, res) => {
-    const body = req.body
-    const delRoom = await sql.query(`DELETE FROM rooms WHERE id = '${body.room_number}'`)
-    res.json({ is_success: !!delRoom })
+  app.post('/api/register', (req, res) => {
+    try {
+      const body = req.body
+      sql.query(`SELECT * FROM users WHERE username = '${body.username}' OR email = '${body.email}'`, (err, results) => {
+        if (err) throw err
+        if (results.length) {
+          res.json({
+            is_success: false,
+            data: 'Username or Email Already Exists'
+          })
+        }
+        sql.query(`INSERT INTO users VALUES ('', '${body.fname}', '${body.lname}', '${body.tel}', '${body.username}', '${body.email}', '${body.password}')`, (err, result) => {
+          if (err) throw err
+          res.json({ is_success: true })
+        })
+      })
+    } catch (err) {
+      res.json({
+        is_success: false,
+        data: err.message
+      })
+    }
+  })
+
+  app.post('/api/room', (req, res) => {
+    try {
+      const body = req.body
+      sql.query(`SELECT * FROM users WHERE room_number='${body.room_number}'`, (err, results) => {
+        if (err) throw err
+        if (results.length) {
+          res.json({
+            is_success: false,
+            data: 'Room Already Exists'
+          })
+        }
+        sql.query(`INSERT INTO room VALUES ('${body.room_number}', '${body.room_number}', '${body.room_type}', ${body.room_price})`, (err, result) => {
+          if (err) throw err
+          res.json({ is_success: true })
+        })
+      })
+    } catch (err) {
+      res.json({
+        is_success: false,
+        data: err.message
+      })
+    }
+  })
+
+  app.delete('/api/room', (req, res) => {
+    try {
+      const body = req.body
+      sql.query(`DELETE FROM room WHERE room_number = '${body.room_number}'`, (err, result) => {
+        if (err) throw err
+        res.json({ is_success: true })
+      })
+    } catch (err) {
+      res.json({
+        is_success: false,
+        data: err.message
+      })
+    }
   })
 
   app.get('*', (req, res) => {

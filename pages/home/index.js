@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Grid, Stack, Select, FormControl, InputLabel, MenuItem, TextField, OutlinedInput, Box, Paper } from '@mui/material'
+import { Grid, Stack, Select, FormControl, InputLabel, MenuItem, TextField, OutlinedInput, Box, Paper, Snackbar, Alert } from '@mui/material'
 import { LocalizationProvider, DateRangePicker } from '@mui/lab'
 import axios from 'axios'
 import AdapterDayJS from '@mui/lab/AdapterDayJS'
@@ -18,6 +18,15 @@ export default function Pages () {
     number: 1
   })
 
+  const [alert, setAlert] = useState(false)
+  const [alertContent, setAlertContent] = useState('')
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setAlert(false)
+  }
+
   const handleChange = (prop) => (event) => {
     setValues({
       ...values, [prop]: event.target.value
@@ -34,14 +43,26 @@ export default function Pages () {
   }
 
   useEffect(async () => {
-    setLoading(true)
-    setValues({
-      ...values, hotels: await axios('/api/hotels')
-    })
-    const timeout = 2.5 * 1000 // 2.5sec
-    setTimeout(() => {
-      setLoading(false)
-    }, timeout)
+    try {
+      setLoading(true)
+      let response = await axios('/api/hotels')
+      response = response.data
+      if (response.is_success) {
+        setValues({
+          ...values, hotels: response.data
+        })
+        const timeout = 2.5 * 1000 // 2.5sec
+        setTimeout(() => {
+          setLoading(false)
+        }, timeout)
+      } else {
+        setAlert(true)
+        setAlertContent(response.data ? response.data : 'Something Went Wrong!')
+      }
+    } catch (err) {
+      setAlert(true)
+      setAlertContent('Something Went Wrong!')
+    }
   }, [])
 
   return (
@@ -127,6 +148,11 @@ export default function Pages () {
         </Grid>
         <Grid item xs={4} />
       </Grid>
+      <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={alert} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity='error' sx={{ width: '100%' }}>
+          {alertContent}
+        </Alert>
+      </Snackbar>
     </div>
   )
 }
