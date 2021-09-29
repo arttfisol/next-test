@@ -80,7 +80,14 @@ export default function ButtonAppBar () {
     } else {
       setAlert(true)
       setAlertContent('Something Went Wrong!')
+      return
     }
+    // query again
+    const resRooms = await axios('/api/rooms')
+    setRooms([])
+    await forEach(resRooms.data, element => {
+      setRooms(previousRooms => [...previousRooms, element])
+    })
   }
 
   const submitDelForm = async () => {
@@ -100,7 +107,14 @@ export default function ButtonAppBar () {
     } else {
       setAlert(true)
       setAlertContent('Something Went Wrong!')
+      return
     }
+    // query again
+    const resRooms = await axios('/api/rooms')
+    setRooms([])
+    await forEach(resRooms.data, element => {
+      setRooms(previousRooms => [...previousRooms, element])
+    })
   }
 
   return (

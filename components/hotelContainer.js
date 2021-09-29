@@ -20,7 +20,7 @@ export default function HotelContainer ({ name, location, detail, price }) {
                 {detail}
               </Typography>
               <Typography variant='h6' gutterBottom style={{ position: 'absolute', bottom: '2.5%', right: '2.5%' }}>
-                Price {price}/night
+                Price ${price}/night
               </Typography>
 
             </Grid>
