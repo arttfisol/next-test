@@ -19,13 +19,16 @@ const sql = mysql.createConnection({
   database: 'log'
 })
 
+sql.connect(function (err) {
+  if (err) { console.log(err) } else { console.log('connected') }
+})
+
 appNext.prepare().then(async () => {
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
   app.use(cookieParser())
   app.use(cors())
 
-  await sql.connect()
   app.get('/ping', (req, res) => {
     res.send('pong')
   })
