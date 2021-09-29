@@ -124,7 +124,7 @@ export default function Pages () {
 
         </Stack>
       </Paper>
-      <Snackbar open={alert} autoHideDuration={6000} onClose={handleClose}>
+      <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={alert} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity='error' sx={{ width: '100%' }}>
           {alertContent}
         </Alert>

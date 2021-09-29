@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Grid, Button, Typography, Box, Modal, FormControl, Stack, InputLabel, OutlinedInput, Snackbar, Alert } from '@mui/material'
+import { Grid, Button, Typography, Box, Modal, FormControl, Stack, InputLabel, OutlinedInput, Snackbar, Alert, Select, MenuItem } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import Menu from '../../../components/menu'
@@ -15,6 +15,11 @@ export default function ButtonAppBar () {
     room_type: '',
     room_price: 0
   })
+
+  const [delRoom, setDelRoom] = useState('')
+  const handleDelChange = (event) => {
+    setDelRoom(event.target.value)
+  }
   const handleAddChange = (prop) => (event) => {
     setAddRoom({ ...addRoom, [prop]: event.target.value })
   }
@@ -56,7 +61,7 @@ export default function ButtonAppBar () {
     p: 4
   }
 
-  const submitForm = async () => {
+  const submitAddForm = async () => {
     if (addRoom.room_number === '' || addRoom.room_type === '' || addRoom.room_price === 0) {
       setAlert(true)
       setAlertContent('Must Fill All Fields')
@@ -68,6 +73,26 @@ export default function ButtonAppBar () {
         room_number: addRoom.room_number,
         room_type: addRoom.room_type,
         room_price: addRoom.room_price
+      }
+    })
+    if (response.is_success) {
+      Router.push('/admin/room')
+    } else {
+      setAlert(true)
+      setAlertContent('Something Went Wrong!')
+    }
+  }
+
+  const submitDelForm = async () => {
+    if (delRoom === '') {
+      setAlert(true)
+      setAlertContent('Please Select One')
+      return
+    }
+    const response = await axios('/api/room', {
+      method: 'DELETE',
+      data: {
+        room_number: addRoom.room_number
       }
     })
     if (response.is_success) {
@@ -118,12 +143,12 @@ export default function ButtonAppBar () {
                   </FormControl>
 
                   <FormControl variant='outlined'>
-                    <InputLabel htmlFor='input-add-room_tpye'>Room Type</InputLabel>
+                    <InputLabel htmlFor='input-add-room_type'>Room Type</InputLabel>
                     <OutlinedInput
-                      id='input-add-room_tpye'
+                      id='input-add-room_type'
                       type='text'
-                      value={addRoom.room_tpye}
-                      onChange={handleAddChange('room_tpye')}
+                      value={addRoom.room_type}
+                      onChange={handleAddChange('room_type')}
                       label='Room Type'
                     />
                   </FormControl>
@@ -143,7 +168,7 @@ export default function ButtonAppBar () {
                     type='submit'
                     variant='contained'
                     size='large'
-                    onClick={submitForm}
+                    onClick={submitAddForm}
                   >
                     Add
                   </Button>
@@ -163,9 +188,35 @@ export default function ButtonAppBar () {
                 <Typography id='modal-modal-title' variant='h6' component='h2'>
                   Delete
                 </Typography>
-                <Typography id='modal-modal-description' sx={{ mt: 2 }}>
-                  Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-                </Typography>
+                <br />
+                <FormControl style={{ width: '80%' }}>
+                  <InputLabel id='input-del-room--label'>Rooms</InputLabel>
+                  <Select
+                    labelId='input-del-room-label'
+                    id='input-del-room'
+                    value={delRoom}
+                    label='Rooms'
+                    onChange={handleDelChange}
+                  >
+                    {
+                      rooms.map((room, index) => {
+                        return (
+                          <MenuItem value={room.room_number} key={index}>{room.room_number}</MenuItem>
+                        )
+                      })
+                    }
+                  </Select>
+                </FormControl>
+                <br />
+                <Button
+                  type='submit'
+                  variant='contained'
+                  size='large'
+                  onClick={submitDelForm}
+                  color='error'
+                >
+                  Delete
+                </Button>
               </Box>
             </Modal>
           </div>
@@ -186,7 +237,7 @@ export default function ButtonAppBar () {
           </Grid>
         </Grid>
       </Grid>
-      <Snackbar open={alert} autoHideDuration={6000} onClose={handleClose}>
+      <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={alert} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity='error' sx={{ width: '100%' }}>
           {alertContent}
         </Alert>

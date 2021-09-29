@@ -33,5 +33,15 @@
         "room_number": "1001",
         "room_type": "Standard",
         "room_price": 20
+    },
+    {
+        "room_number": "1002",
+        "room_type": "Standard",
+        "room_price": 20
+    },
+    {
+        "room_number": "1003",
+        "room_type": "Standard",
+        "room_price": 20
     }
 ]
