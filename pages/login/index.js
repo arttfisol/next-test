@@ -51,6 +51,9 @@ export default function Pages () {
       }
     })
     if (response.is_success) {
+      if (values.email === 'admin@gmail.com') {
+        Router.push('/admin/room')
+      }
       Router.push('/home')
     } else {
       setAlert(true)
