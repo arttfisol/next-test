@@ -46,7 +46,7 @@ appNext.prepare().then(async () => {
 
   app.get('/api/rooms', async (req, res) => {
     try {
-      await sql.query('SELECT * FROM room', (err, results) => {
+      await sql.query('SELECT * FROM room', function (err, results) {
         if (err) throw err
         res.json({
           is_success: true,
@@ -65,7 +65,7 @@ appNext.prepare().then(async () => {
     try {
       const body = req.body
 
-      sql.query(`SELECT * FROM users WHERE email = '${body.email}' AND password = '${md5(body.password)}'`, (err, results) => {
+      sql.query(`SELECT * FROM users WHERE email = '${body.email}' AND password = '${md5(body.password)}'`, function (err, results) {
         if (err) throw err
         if (!results.length) {
           res.json({ is_success: false })
@@ -83,7 +83,7 @@ appNext.prepare().then(async () => {
   app.post('/api/register', (req, res) => {
     try {
       const body = req.body
-      sql.query(`SELECT * FROM users WHERE username = '${body.username}' OR email = '${body.email}'`, (err, results) => {
+      sql.query(`SELECT * FROM users WHERE username = '${body.username}' OR email = '${body.email}'`, function (err, results) {
         if (err) throw err
         if (results.length) {
           res.json({
@@ -91,7 +91,7 @@ appNext.prepare().then(async () => {
             data: 'Username or Email Already Exists'
           })
         }
-        sql.query(`INSERT INTO users VALUES ('', '${body.fname}', '${body.lname}', '${body.tel}', '${body.username}', '${body.email}', '${body.password}')`, (err, result) => {
+        sql.query(`INSERT INTO users (fname, lname, username, tel, email, password, birth) VALUES ('${body.fname}', '${body.lname}', '${body.tel}', '${body.username}', '${body.email}', '${body.password}' , '${sql.escape(body.birth)}')`, function (err, result) {
           if (err) throw err
           res.json({ is_success: true })
         })
@@ -107,7 +107,7 @@ appNext.prepare().then(async () => {
   app.post('/api/room', (req, res) => {
     try {
       const body = req.body
-      sql.query(`SELECT * FROM users WHERE room_number='${body.room_number}'`, (err, results) => {
+      sql.query(`SELECT * FROM users WHERE room_number='${body.room_number}'`, function (err, results) {
         if (err) throw err
         if (results.length) {
           res.json({
@@ -115,7 +115,7 @@ appNext.prepare().then(async () => {
             data: 'Room Already Exists'
           })
         }
-        sql.query(`INSERT INTO room VALUES ('${body.room_number}', '${body.room_number}', '${body.room_type}', ${body.room_price})`, (err, result) => {
+        sql.query(`INSERT INTO room VALUES ('${body.room_number}', '${body.room_number}', '${body.room_type}', ${body.room_price})`, function (err, result) {
           if (err) throw err
           res.json({ is_success: true })
         })
@@ -131,7 +131,7 @@ appNext.prepare().then(async () => {
   app.delete('/api/room', (req, res) => {
     try {
       const body = req.body
-      sql.query(`DELETE FROM room WHERE room_number = '${body.room_number}'`, (err, result) => {
+      sql.query(`DELETE FROM room WHERE room_number = '${body.room_number}'`, function (err, result) {
         if (err) throw err
         res.json({ is_success: true })
       })
