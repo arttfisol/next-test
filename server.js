@@ -4,6 +4,7 @@ const express = require('express')
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser')
+const _ = require('lodash')
 
 const dev = process.env.NODE_ENV !== 'production'
 const appNext = next({ dev })
@@ -58,6 +59,47 @@ appNext.prepare().then(async () => {
         })
       })
     } catch (err) {
+      res.json({
+        is_success: false,
+        data: err.message
+      })
+    }
+  })
+
+  app.get('/api/check-rooms', (req, res) => {
+    try {
+      const que = req.query
+      console.log('que ', que)
+      sql.query(`SELECT * FROM room WHERE branch= '${que.branch}'`, function (err, allRooms) {
+        if (err) throw err
+        sql.query(`SELECT * FROM booking WHERE ( check_in <= date_format('${que.check_in}', '%Y-%m-%d') AND check_out > date_format('${que.check_in}', '%Y-%m-%d') ) OR ( check_in >= date_format('${que.check_in}', '%Y-%m-%d') AND check_in < date_format('${que.check_out}', '%Y-%m-%d') )`, async (err, unAvailable) => {
+          if (err) throw err
+          console.log('allRooms before: ', allRooms)
+          console.log('unAvailable : ',unAvailable)
+          await _.forEach(unAvailable, (un) => {
+            _.remove(allRooms, (rooms) => {
+              return rooms.room_number === un.room_number && rooms.branch === un.branch
+            })
+          })
+          const filteredRoom = []
+          await _.forEach(allRooms, (room) => {
+            if(!_.find(filteredRoom, { room_type: room.room_type })){
+              filteredRoom.push({
+                room_type: room.room_type,
+                room_price: room.room_price,
+                branch: room.branch
+              })
+            }
+          })
+          console.log('filteredRoom', filteredRoom)
+          res.json({
+            is_success: true,
+            data: filteredRoom
+          })
+        })
+      })
+    } catch (err) {
+      console.log(err)
       res.json({
         is_success: false,
         data: err.message

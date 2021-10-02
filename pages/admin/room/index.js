@@ -73,8 +73,6 @@ export default function ButtonAppBar () {
           if (resRooms.is_success) {
             await forEach(resRooms.data, element => {
                 setRooms(previousRooms => [...previousRooms, element])
-                console.log('element', element)
-                console.log('selectedBranch', selectedBranch)
                 if(element.branch === selectedBranch){
                   setSeletedRooms(previousRooms => [...previousRooms, element])
                 }

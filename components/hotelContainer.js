@@ -1,6 +1,6 @@
 import { Paper, Grid, Typography, Accordion, AccordionSummary, AccordionDetails, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material'
 
-export default function HotelContainer ({ name, location, detail, price }) {
+export default function HotelContainer ({ type, detail, price }) {
   return (
     <Paper elevation={6} style={{ margin: '1%' }}>
       <Accordion>
@@ -10,11 +10,8 @@ export default function HotelContainer ({ name, location, detail, price }) {
               <img src='pic_test.jpg' style={{ objectFit: 'cover', width: '90%', height: '90%', borderRadius: '10%' }} />
             </Grid>
             <Grid item xs={8} style={{ padding: '1%', position: 'relative' }}>
-              <Typography variant='h4' gutterBottom style={{ marginTop: '1%', marginBottom: '1%' }}>
-                {name}
-              </Typography>
               <Typography variant='h5' gutterBottom style={{ marginTop: '1%', marginBottom: '1%' }}>
-                {location}
+                TYPE: {type}
               </Typography>
               <Typography variant='h6' gutterBottom style={{ marginTop: '1%', marginBottom: '1%' }}>
                 {detail}
