@@ -6,6 +6,8 @@ import AdapterDayJS from '@mui/lab/AdapterDayJS'
 import HotalContainer from '../../components/hotelContainer'
 import SkeletonHotelContainer from '../../components/skeleton/hotelContainer'
 import mockHotel from '../../json/hotel.json'
+import 'react-perfect-scrollbar/dist/css/styles.css'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 const now = new Date()
 
@@ -123,28 +125,30 @@ export default function Pages () {
       <br />
       <Grid container>
         <Grid item xs={1} />
-        <Grid item xs={7} style={{ overflow: 'scroll', height: '80vh' }}>
-          <Stack>
-            {loading
-              ? (
-                <>
-                  <SkeletonHotelContainer />
-                  <SkeletonHotelContainer />
-                </>
-                )
+        <Grid item xs={7} style={{ height: '80vh' }}>
+          <PerfectScrollbar>
+            <Stack>
+              {loading
+                ? (
+                  <>
+                    <SkeletonHotelContainer />
+                    <SkeletonHotelContainer />
+                  </>
+                  )
 
-              : mockHotel.map((hotel, index) => {
-                return (
-                  <HotalContainer
-                    name={hotel.name}
-                    location={hotel.location}
-                    detail={hotel.detail}
-                    price={hotel.price}
-                    key={index}
-                  />
-                )
-              })}
-          </Stack>
+                : mockHotel.map((hotel, index) => {
+                  return (
+                    <HotalContainer
+                      name={hotel.name}
+                      location={hotel.location}
+                      detail={hotel.detail}
+                      price={hotel.price}
+                      key={index}
+                    />
+                  )
+                })}
+            </Stack>
+          </PerfectScrollbar>
         </Grid>
         <Grid item xs={4} />
       </Grid>

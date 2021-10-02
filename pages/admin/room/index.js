@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Grid, Button, Typography, Box, Modal, FormControl, Stack, InputLabel, OutlinedInput, Snackbar, Alert, Select, MenuItem } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
+import { Grid, Button, Typography, Box, Modal, FormControl, Stack, InputLabel, OutlinedInput, Snackbar, Alert } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
+import 'react-perfect-scrollbar/dist/css/styles.css'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 import Menu from '../../../components/menu'
 import axios from 'axios'
-import Router from 'next/router'
 import { forEach } from 'lodash'
 import RoomContainer from '../../../components/roomContainer'
 
@@ -16,20 +16,12 @@ export default function ButtonAppBar () {
     room_price: 0
   })
 
-  const [delRoom, setDelRoom] = useState('')
-  const handleDelChange = (event) => {
-    setDelRoom(event.target.value)
-  }
   const handleAddChange = (prop) => (event) => {
     setAddRoom({ ...addRoom, [prop]: event.target.value })
   }
   const [openAdd, setOpenAdd] = useState(false)
   const handleOpenAdd = () => setOpenAdd(true)
   const handleCloseAdd = () => setOpenAdd(false)
-
-  const [openDel, setOpenDel] = useState(false)
-  const handleOpenDel = () => setOpenDel(true)
-  const handleCloseDel = () => setOpenDel(false)
 
   const [alert, setAlert] = useState(false)
   const [alertContent, setAlertContent] = useState('')
@@ -41,11 +33,14 @@ export default function ButtonAppBar () {
   }
 
   useEffect(async () => {
-    const resRooms = await axios('/api/rooms')
     if (!rooms.length) {
-      await forEach(resRooms.data, element => {
-        setRooms(previousRooms => [...previousRooms, element])
-      })
+      let resRooms = await axios('/api/rooms')
+      resRooms = resRooms.data
+      if (resRooms.is_success) {
+        await forEach(resRooms.data, element => {
+          setRooms(previousRooms => [...previousRooms, element])
+        })
+      }
     }
   }, [])
 
@@ -78,37 +73,15 @@ export default function ButtonAppBar () {
       })
       response = response.data
       if (response.is_success) {
-        Router.push('/admin/room')
+        setRooms([])
+        await forEach(response.data, element => {
+          setRooms(previousRooms => [...previousRooms, element])
+        })
       } else {
         setAlert(true)
         setAlertContent(response.data ? response.data : 'Something Went Wrong!')
       }
-    } catch (err) {
-      setAlert(true)
-      setAlertContent('Something Went Wrong!')
-    }
-  }
-
-  const submitDelForm = async () => {
-    try {
-      if (delRoom === '') {
-        setAlert(true)
-        setAlertContent('Please Select One')
-        return
-      }
-      let response = await axios('/api/room', {
-        method: 'DELETE',
-        data: {
-          room_number: addRoom.room_number
-        }
-      })
-      response = response.data
-      if (response.is_success) {
-        Router.push('/admin/room')
-      } else {
-        setAlert(true)
-        setAlertContent(response.data ? response.data : 'Something Went Wrong!')
-      }
+      handleCloseAdd()
     } catch (err) {
       setAlert(true)
       setAlertContent('Something Went Wrong!')
@@ -187,67 +160,26 @@ export default function ButtonAppBar () {
                 </Stack>
               </Box>
             </Modal>
-            <Button variant='outlined' color='error' onClick={handleOpenDel} startIcon={<DeleteIcon />} style={{ margin: '1%' }}>
-              Delete Room
-            </Button>
-            <Modal
-              open={openDel}
-              onClose={handleCloseDel}
-              aria-labelledby='modal-modal-title'
-              aria-describedby='modal-modal-description'
-            >
-              <Box sx={style}>
-                <Typography id='modal-modal-title' variant='h6' component='h2'>
-                  Delete
-                </Typography>
-                <br />
-                <FormControl style={{ width: '80%' }}>
-                  <InputLabel id='input-del-room--label'>Rooms</InputLabel>
-                  <Select
-                    labelId='input-del-room-label'
-                    id='input-del-room'
-                    value={delRoom}
-                    label='Rooms'
-                    onChange={handleDelChange}
-                  >
-                    {
-                      rooms.map((room, index) => {
-                        return (
-                          <MenuItem value={room.room_number} key={index}>{room.room_number}</MenuItem>
-                        )
-                      })
-                    }
-                  </Select>
-                </FormControl>
-                <br />
-                <br />
-                <Button
-                  type='submit'
-                  variant='contained'
-                  size='large'
-                  onClick={submitDelForm}
-                  color='error'
-                >
-                  Delete
-                </Button>
-              </Box>
-            </Modal>
           </div>
-          <Grid container style={{ overflow: 'scroll', height: '75vh' }}>
-            {
-            rooms.map((room, index) => {
-              return (
-                <Grid item xs={3} key={index}>
-                  <RoomContainer
-                    number={room.room_number}
-                    type={room.room_type}
-                    price={room.room_price}
-                  />
-                </Grid>
-              )
-            })
-        }
-          </Grid>
+          <PerfectScrollbar style={{ height: '75vh', width: '100%' }}>
+            <Grid container>
+              {
+                rooms.map((room, index) => {
+                  return (
+                    <Grid item xs={3} key={index}>
+                      <RoomContainer
+                        number={room.room_number}
+                        type={room.room_type}
+                        price={room.room_price}
+                        setRooms={setRooms}
+                      />
+                    </Grid>
+                  )
+                })
+               }
+
+            </Grid>
+          </PerfectScrollbar>
         </Grid>
       </Grid>
       <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={alert} autoHideDuration={6000} onClose={handleClose}>

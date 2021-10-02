@@ -47,9 +47,9 @@ appNext.prepare().then(async () => {
     }
   })
 
-  app.get('/api/rooms', async (req, res) => {
+  app.get('/api/rooms', (req, res) => {
     try {
-      await sql.query('SELECT * FROM room', function (err, results) {
+      sql.query('SELECT * FROM room', function (err, results) {
         if (err) throw err
         res.json({
           is_success: true,
@@ -67,7 +67,6 @@ appNext.prepare().then(async () => {
   app.post('/api/login', (req, res) => {
     try {
       const body = req.body
-
       sql.query(`SELECT * FROM users WHERE email = '${body.email}' AND password = '${md5(body.password)}'`, function (err, results) {
         if (err) throw err
         if (!results.length) {
@@ -120,7 +119,13 @@ appNext.prepare().then(async () => {
         }
         sql.query(`INSERT INTO room VALUES ('${body.room_number}', '${body.room_number}', '${body.room_type}', ${body.room_price})`, function (err, result) {
           if (err) throw err
-          res.json({ is_success: true })
+          sql.query('SELECT * FROM room', function (err, results) {
+            if (err) throw err
+            res.json({
+              is_success: true,
+              data: results
+            })
+          })
         })
       })
     } catch (err) {
@@ -136,7 +141,13 @@ appNext.prepare().then(async () => {
       const body = req.body
       sql.query(`DELETE FROM room WHERE room_number = '${body.room_number}'`, function (err, result) {
         if (err) throw err
-        res.json({ is_success: true })
+        sql.query('SELECT * FROM room', function (err, results) {
+          if (err) throw err
+          res.json({
+            is_success: true,
+            data: results
+          })
+        })
       })
     } catch (err) {
       res.json({
