@@ -131,7 +131,7 @@ appNext.prepare().then(async () => {
         if (err) throw err
         if (results.length) {
           console.log('Room Already Exists')
-          res.json({
+          return res.json({
             is_success: false,
             data: 'Room Already Exists'
           })
