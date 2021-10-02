@@ -80,13 +80,14 @@ export default function Pages () {
       let response = await axios('/api/register', {
         method: 'POST',
         data: {
-          fname: values.firstname,
-          lname: values.lastname,
-          tel: values.telephone,
-          birth: new Date(values.birthdate),
+          fname: values.fname,
+          lname: values.lname,
+          tel: values.tel,
+          birth: values.birth.split('T')[0],
+          username: values.username,
           email: values.email,
           password: values.password,
-          cpassword: values.cpassowrd
+          cpassword: values.cpassword
         }
       })
       response = response.data

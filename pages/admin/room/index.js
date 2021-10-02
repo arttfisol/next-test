@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react'
-import { Grid, Button, Typography, Box, Modal, FormControl, Stack, InputLabel, OutlinedInput, Snackbar, Alert } from '@mui/material'
+import { Grid, Button, Typography, Box, Modal, FormControl, Stack, InputLabel, OutlinedInput, Snackbar, Alert, Select, MenuItem } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import 'react-perfect-scrollbar/dist/css/styles.css'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import Menu from '../../../components/menu'
 import axios from 'axios'
-import { forEach } from 'lodash'
+import { forEach, find } from 'lodash'
 import RoomContainer from '../../../components/roomContainer'
 
 export default function ButtonAppBar () {
   const [rooms, setRooms] = useState([])
+  const [roomTypes, setRoomTypes] = useState([])
   const [addRoom, setAddRoom] = useState({
     room_number: '',
     room_type: '',
@@ -17,7 +18,12 @@ export default function ButtonAppBar () {
   })
 
   const handleAddChange = (prop) => (event) => {
-    setAddRoom({ ...addRoom, [prop]: event.target.value })
+    if (prop === 'room_type') {
+      const selectedType = find(roomTypes, { type: event.target.value })
+      setAddRoom({ ...addRoom, [prop]: event.target.value, room_price: selectedType.price })
+    } else {
+      setAddRoom({ ...addRoom, [prop]: event.target.value })
+    }
   }
   const [openAdd, setOpenAdd] = useState(false)
   const handleOpenAdd = () => setOpenAdd(true)
@@ -39,6 +45,15 @@ export default function ButtonAppBar () {
       if (resRooms.is_success) {
         await forEach(resRooms.data, element => {
           setRooms(previousRooms => [...previousRooms, element])
+        })
+      }
+    }
+    if (!roomTypes.length) {
+      let resRoomTypes = await axios('/api/room-types')
+      resRoomTypes = resRoomTypes.data
+      if (resRoomTypes.is_success) {
+        await forEach(resRoomTypes.data, element => {
+          setRoomTypes(previousRooms => [...previousRooms, element])
         })
       }
     }
@@ -82,10 +97,19 @@ export default function ButtonAppBar () {
         setAlertContent(response.data ? response.data : 'Something Went Wrong!')
       }
       handleCloseAdd()
+      setAddRoom({
+        room_number: '',
+        room_type: '',
+        room_price: 0
+      })
     } catch (err) {
       setAlert(true)
       setAlertContent('Something Went Wrong!')
     }
+  }
+
+  const numberWithCommas = (num) => {
+    return num.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   }
 
   return (
@@ -128,23 +152,31 @@ export default function ButtonAppBar () {
                   </FormControl>
 
                   <FormControl variant='outlined'>
-                    <InputLabel htmlFor='input-add-room_type'>Room Type</InputLabel>
-                    <OutlinedInput
+                    <InputLabel id='input-add-room_type-label'>Room Type</InputLabel>
+                    <Select
+                      labelId='input-add-room_type-label'
                       id='input-add-room_type'
-                      type='text'
                       value={addRoom.room_type}
-                      onChange={handleAddChange('room_type')}
                       label='Room Type'
-                    />
+                      onChange={handleAddChange('room_type')}
+                    >
+                      {
+                        roomTypes.map((type, index) => {
+                          return (
+                            <MenuItem value={type.type} key={index}>{type.type}</MenuItem>
+                          )
+                        })
+                      }
+                    </Select>
                   </FormControl>
 
                   <FormControl variant='outlined'>
                     <InputLabel htmlFor='input-add-room_price'>Room Price</InputLabel>
                     <OutlinedInput
+                      disabled
                       id='input-add-room_price'
                       type='number'
                       value={addRoom.room_price}
-                      onChange={handleAddChange('room_price')}
                       label='Room Price'
                     />
                   </FormControl>
@@ -170,7 +202,7 @@ export default function ButtonAppBar () {
                       <RoomContainer
                         number={room.room_number}
                         type={room.room_type}
-                        price={room.room_price}
+                        price={numberWithCommas(room.room_price)}
                         setRooms={setRooms}
                       />
                     </Grid>
