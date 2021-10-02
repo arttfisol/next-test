@@ -82,6 +82,23 @@ appNext.prepare().then(async () => {
     }
   })
 
+  app.get('/api/branch', (req, res) => {
+    try {
+      sql.query('SELECT * FROM branch', function (err, results) {
+        if (err) throw err
+        res.json({
+          is_success: true,
+          data: results
+        })
+      })
+    } catch (err) {
+      res.json({
+        is_success: false,
+        data: err.message
+      })
+    }
+  })
+
   app.post('/api/login', (req, res) => {
     try {
       const body = req.body
@@ -127,7 +144,7 @@ appNext.prepare().then(async () => {
   app.post('/api/room', (req, res) => {
     try {
       const body = req.body
-      sql.query(`SELECT * FROM room WHERE room_number='${body.room_number}'`, function (err, results) {
+      sql.query(`SELECT * FROM room WHERE room_number='${body.room_number}' AND branch='${body.branch}'`, function (err, results) {
         if (err) throw err
         if (results.length) {
           console.log('Room Already Exists')
@@ -136,9 +153,9 @@ appNext.prepare().then(async () => {
             data: 'Room Already Exists'
           })
         }
-        sql.query(`INSERT INTO room (room_number, room_type, room_price) VALUES ('${body.room_number}', '${body.room_type}', ${body.room_price})`, function (err, result) {
+        sql.query(`INSERT INTO room (room_number, room_type, room_price, available, branch) VALUES ('${body.room_number}', '${body.room_type}', ${body.room_price}, TRUE, '${body.branch}')`, function (err, result) {
           if (err) throw err
-          console.log(`Insert Room Number ${body.room_number} Success`)
+          console.log(`Insert Room Number ${body.room_number} Branch ${body.branch} Success`)
           sql.query('SELECT * FROM room', function (err, results) {
             if (err) throw err
             res.json({
@@ -159,9 +176,9 @@ appNext.prepare().then(async () => {
   app.delete('/api/room', (req, res) => {
     try {
       const body = req.body
-      sql.query(`DELETE FROM room WHERE room_number = '${body.room_number}'`, function (err, result) {
+      sql.query(`DELETE FROM room WHERE room_number = '${body.room_number}' AND branch= '${body.branch}'`, function (err, result) {
         if (err) throw err
-        console.log(`Delete Room Number ${body.room_number} Success`)
+        console.log(`Delete Room Number ${body.room_number} Branch ${body.branch} Success`)
         sql.query('SELECT * FROM room', function (err, results) {
           if (err) throw err
           res.json({

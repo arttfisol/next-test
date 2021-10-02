@@ -10,14 +10,17 @@ import RoomContainer from '../../../components/roomContainer'
 
 export default function ButtonAppBar () {
   const [rooms, setRooms] = useState([])
+  const [seletedRooms, setSeletedRooms] = useState([])
   const [roomTypes, setRoomTypes] = useState([])
+  const [branch, setBranch] = useState([])
   const [addRoom, setAddRoom] = useState({
     room_number: '',
     room_type: '',
-    room_price: 0
+    room_price: 0,
+    branch: ''
   })
 
-  const handleAddChange = (prop) => (event) => {
+  const handleAddChange = (prop) => async (event) => {
     if (prop === 'room_type') {
       const selectedType = find(roomTypes, { type: event.target.value })
       setAddRoom({ ...addRoom, [prop]: event.target.value, room_price: selectedType.price })
@@ -37,17 +40,15 @@ export default function ButtonAppBar () {
     }
     setAlert(false)
   }
+  useEffect(async ()=>{
+    const sRoom = []
+    await forEach(rooms, element => {
+      element.branch === addRoom.branch && sRoom.push(element)
+    })
+    setSeletedRooms([...sRoom])
+  },[addRoom.branch,rooms])
 
   useEffect(async () => {
-    if (!rooms.length) {
-      let resRooms = await axios('/api/rooms')
-      resRooms = resRooms.data
-      if (resRooms.is_success) {
-        await forEach(resRooms.data, element => {
-          setRooms(previousRooms => [...previousRooms, element])
-        })
-      }
-    }
     if (!roomTypes.length) {
       let resRoomTypes = await axios('/api/room-types')
       resRoomTypes = resRoomTypes.data
@@ -55,6 +56,31 @@ export default function ButtonAppBar () {
         await forEach(resRoomTypes.data, element => {
           setRoomTypes(previousRooms => [...previousRooms, element])
         })
+      }
+    }
+    if (!branch.length) {
+      let resBranch = await axios('/api/branch')
+      resBranch = resBranch.data
+      if (resBranch.is_success) {
+        await forEach(resBranch.data, element => {
+          setBranch(previousRooms => [...previousRooms, element])
+        })
+        const selectedBranch = resBranch.data.length ? resBranch.data[0].name : ''
+        setAddRoom({...addRoom,branch: selectedBranch})
+        if (!rooms.length && selectedBranch) {
+          let resRooms = await axios('/api/rooms')
+          resRooms = resRooms.data
+          if (resRooms.is_success) {
+            await forEach(resRooms.data, element => {
+                setRooms(previousRooms => [...previousRooms, element])
+                console.log('element', element)
+                console.log('selectedBranch', selectedBranch)
+                if(element.branch === selectedBranch){
+                  setSeletedRooms(previousRooms => [...previousRooms, element])
+                }
+            })
+          }
+        }
       }
     }
   }, [])
@@ -83,24 +109,27 @@ export default function ButtonAppBar () {
         data: {
           room_number: addRoom.room_number,
           room_type: addRoom.room_type,
-          room_price: addRoom.room_price
+          room_price: addRoom.room_price,
+          branch: addRoom.branch
         }
       })
       response = response.data
       if (response.is_success) {
-        setRooms([])
+        const r = []
         await forEach(response.data, element => {
-          setRooms(previousRooms => [...previousRooms, element])
+          r.push(element)
         })
+        setRooms([...r])
       } else {
         setAlert(true)
         setAlertContent(response.data ? response.data : 'Something Went Wrong!')
       }
       handleCloseAdd()
       setAddRoom({
+        ...addRoom,
         room_number: '',
         room_type: '',
-        room_price: 0
+        room_price: 0,
       })
     } catch (err) {
       setAlert(true)
@@ -192,17 +221,36 @@ export default function ButtonAppBar () {
                 </Stack>
               </Box>
             </Modal>
+            <FormControl style={{width:'210px'}}>
+              <InputLabel id='input-branch-label'>Branch</InputLabel>
+              <Select
+                labelId='input-branch-label'
+                id='input-branch'
+                value={addRoom.branch}
+                label='Branch'
+                onChange={handleAddChange('branch')}
+              >
+                {
+                  branch.map((branch, index) => {
+                    return (
+                      <MenuItem value={branch.name} key={index}>{branch.name}</MenuItem>
+                    )
+                  })
+                }
+              </Select>
+            </FormControl>
           </div>
           <PerfectScrollbar style={{ height: '75vh', width: '100%' }}>
             <Grid container>
               {
-                rooms.map((room, index) => {
+                seletedRooms.map((seletedRoom, index) => {
                   return (
                     <Grid item xs={3} key={index}>
                       <RoomContainer
-                        number={room.room_number}
-                        type={room.room_type}
-                        price={numberWithCommas(room.room_price)}
+                        number={seletedRoom.room_number}
+                        type={seletedRoom.room_type}
+                        price={numberWithCommas(seletedRoom.room_price)}
+                        branch={seletedRoom.branch}
                         setRooms={setRooms}
                       />
                     </Grid>
