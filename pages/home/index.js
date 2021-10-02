@@ -5,6 +5,7 @@ import axios from 'axios'
 import AdapterDayJS from '@mui/lab/AdapterDayJS'
 import HotalContainer from '../../components/hotelContainer'
 import SkeletonHotelContainer from '../../components/skeleton/hotelContainer'
+import Header from '../../components/header'
 import mockHotel from '../../json/hotel.json'
 import 'react-perfect-scrollbar/dist/css/styles.css'
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -69,6 +70,7 @@ export default function Pages () {
 
   return (
     <div style={{ backgroundImage: 'url("bg1.jpeg")', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+      <Header />
       <Paper>
         <Grid container p='1%'>
           <Grid item xs={2} />
