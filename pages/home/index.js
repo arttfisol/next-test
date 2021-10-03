@@ -18,7 +18,7 @@ export default function Pages () {
   const [branch, setBranch] = useState([])
   const [values, setValues] = useState({
     branch: '',
-    inout: [new Date().toISOString(),new Date(now.setDate(now.getDate() + 1)).toISOString()],
+    inout: [new Date().toISOString(), new Date(now.setDate(now.getDate() + 1)).toISOString()],
     // inout: ['2021-09-30T123', '2021-10-01T123'],
     number: 1
   })
@@ -48,7 +48,7 @@ export default function Pages () {
   }
 
   const submitFilter = async () => {
-    try{
+    try {
       setLoading(true)
       let resRooms = await axios('/api/check-rooms', {
         method: 'GET',
@@ -63,18 +63,18 @@ export default function Pages () {
       if (resRooms.is_success) {
         const r = []
         await forEach(resRooms.data, element => {
-            r.push(element)
+          r.push(element)
         })
-        setRooms([...rooms])
+        setRooms([...r])
         const timeout = 2.5 * 1000 // 2.5sec
         setTimeout(() => {
           setLoading(false)
         }, timeout)
-      }else{
+      } else {
         setAlert(true)
-        setAlertContent(response.data ? response.data : 'Something Went Wrong!')
+        setAlertContent(resRooms.data ? resRooms.data : 'Something Went Wrong!')
       }
-    } catch (err){
+    } catch (err) {
       setAlert(true)
       setAlertContent('Something Went Wrong!')
     }
@@ -92,7 +92,7 @@ export default function Pages () {
           })
           const selectedBranch = resBranch.data.length ? resBranch.data[0].name : ''
           console.log('first selectedBranch', selectedBranch)
-          setValues({ ...values, branch: selectedBranch})
+          setValues({ ...values, branch: selectedBranch })
           if (!rooms.length && selectedBranch) {
             let resRooms = await axios('/api/check-rooms', {
               method: 'GET',
@@ -106,20 +106,20 @@ export default function Pages () {
             resRooms = resRooms.data
             if (resRooms.is_success) {
               await forEach(resRooms.data, element => {
-                  setRooms(previousRooms => [...previousRooms, element])
+                setRooms(previousRooms => [...previousRooms, element])
               })
               const timeout = 2.5 * 1000 // 2.5sec
               setTimeout(() => {
                 setLoading(false)
               }, timeout)
-            }else{
+            } else {
               setAlert(true)
-              setAlertContent(response.data ? response.data : 'Something Went Wrong!')
+              setAlertContent(resRooms.data ? resRooms.data : 'Something Went Wrong!')
             }
           }
-        }else{
+        } else {
           setAlert(true)
-          setAlertContent(response.data ? response.data : 'Something Went Wrong!')
+          setAlertContent(resBranch.data ? resBranch.data : 'Something Went Wrong!')
         }
       }
     } catch (err) {
@@ -153,7 +153,7 @@ export default function Pages () {
                   return (
                     <HotalContainer
                       type={room.room_type}
-                      detail='Newly-renovated suite with great wifi. West Portal is a safe, peaceful "transit village" with cafes & restaurants. Walk 3 mins to the metro (subway) station. Wait 2-4 mins for train. Ride downtown in 15 mins!'
+                      detail='{-------------------------------------------------------------------------------------------------------This is for detail of each room---------------------------------------------------------------------------------------------}'
                       price={numberWithCommas(room.room_price)}
                       key={index}
                     />
@@ -162,10 +162,10 @@ export default function Pages () {
             </Stack>
           </PerfectScrollbar>
         </Grid>
-        <Grid item xs={4} >
-          <Paper style={{ margin:'60px'}} >
+        <Grid item xs={4}>
+          <Paper style={{ margin: '60px' }}>
             <Stack>
-            <FormControl style={{margin: '50px', width:'80%'}}>
+              <FormControl style={{ margin: '50px', width: '80%' }}>
                 <InputLabel id='input-location-label'>Branch</InputLabel>
                 <Select
                   labelId='input-location-label'
@@ -183,25 +183,25 @@ export default function Pages () {
                   }
                 </Select>
               </FormControl>
-              <div style={{marginLeft:'40px', marginRight:'40px', marginBottom:'40px'}}>
-              <LocalizationProvider dateAdapter={AdapterDayJS} >
-                <DateRangePicker
-                  style={{width:'100%'}}
-                  startText='Check-In'
-                  endText='Check-Out'
-                  value={values.inout}
-                  onChange={handleDateChange('inout')}
-                  renderInput={(startProps, endProps) => (
-                    <>
-                      <TextField {...startProps} style={{ width: '50%' }} />
-                      <Box sx={{ mx: 3 }}> to </Box>
-                      <TextField {...endProps} style={{ width: '50%' }} />
-                    </>
-                  )}
-                />
-              </LocalizationProvider>
+              <div style={{ marginLeft: '40px', marginRight: '40px', marginBottom: '40px' }}>
+                <LocalizationProvider dateAdapter={AdapterDayJS}>
+                  <DateRangePicker
+                    style={{ width: '100%' }}
+                    startText='Check-In'
+                    endText='Check-Out'
+                    value={values.inout}
+                    onChange={handleDateChange('inout')}
+                    renderInput={(startProps, endProps) => (
+                      <>
+                        <TextField {...startProps} style={{ width: '50%' }} />
+                        <Box sx={{ mx: 3 }}> to </Box>
+                        <TextField {...endProps} style={{ width: '50%' }} />
+                      </>
+                    )}
+                  />
+                </LocalizationProvider>
               </div>
-              <FormControl variant='outlined' style={{ marginLeft:'125px' ,marginRight:'125px' ,marginBottom:'40px' , width:'50%'}}>
+              <FormControl variant='outlined' style={{ marginLeft: '125px', marginRight: '125px', marginBottom: '40px', width: '50%' }}>
                 <InputLabel htmlFor='input-number'>Number of Room</InputLabel>
                 <OutlinedInput
                   id='input-number'
@@ -220,7 +220,7 @@ export default function Pages () {
               >
                 Submit
               </Button>
-              </Stack>
+            </Stack>
           </Paper>
         </Grid>
       </Grid>

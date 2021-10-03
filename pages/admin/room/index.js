@@ -40,46 +40,61 @@ export default function ButtonAppBar () {
     }
     setAlert(false)
   }
-  useEffect(async ()=>{
+  useEffect(async () => {
     const sRoom = []
     await forEach(rooms, element => {
       element.branch === addRoom.branch && sRoom.push(element)
     })
     setSeletedRooms([...sRoom])
-  },[addRoom.branch,rooms])
+  }, [addRoom.branch, rooms])
 
   useEffect(async () => {
-    if (!roomTypes.length) {
-      let resRoomTypes = await axios('/api/room-types')
-      resRoomTypes = resRoomTypes.data
-      if (resRoomTypes.is_success) {
-        await forEach(resRoomTypes.data, element => {
-          setRoomTypes(previousRooms => [...previousRooms, element])
-        })
-      }
-    }
-    if (!branch.length) {
-      let resBranch = await axios('/api/branch')
-      resBranch = resBranch.data
-      if (resBranch.is_success) {
-        await forEach(resBranch.data, element => {
-          setBranch(previousRooms => [...previousRooms, element])
-        })
-        const selectedBranch = resBranch.data.length ? resBranch.data[0].name : ''
-        setAddRoom({...addRoom,branch: selectedBranch})
-        if (!rooms.length && selectedBranch) {
-          let resRooms = await axios('/api/rooms')
-          resRooms = resRooms.data
-          if (resRooms.is_success) {
-            await forEach(resRooms.data, element => {
-                setRooms(previousRooms => [...previousRooms, element])
-                if(element.branch === selectedBranch){
-                  setSeletedRooms(previousRooms => [...previousRooms, element])
-                }
-            })
-          }
+    try {
+      if (!roomTypes.length) {
+        let resRoomTypes = await axios('/api/room-types')
+        resRoomTypes = resRoomTypes.data
+        if (resRoomTypes.is_success) {
+          await forEach(resRoomTypes.data, element => {
+            setRoomTypes(previousTypes => [...previousTypes, element])
+          })
+        } else {
+          setAlert(true)
+          setAlertContent(resRoomTypes.data ? resRoomTypes.data : 'Something Went Wrong!')
         }
       }
+
+      if (!branch.length) {
+        let resBranch = await axios('/api/branch')
+        resBranch = resBranch.data
+        if (resBranch.is_success) {
+          await forEach(resBranch.data, element => {
+            setBranch(previousRooms => [...previousRooms, element])
+          })
+          const selectedBranch = resBranch.data.length ? resBranch.data[0].name : ''
+          setAddRoom({ ...addRoom, branch: selectedBranch })
+          if (!rooms.length && selectedBranch) {
+            let resRooms = await axios('/api/rooms')
+            resRooms = resRooms.data
+            if (resRooms.is_success) {
+              await forEach(resRooms.data, element => {
+                setRooms(previousRooms => [...previousRooms, element])
+                if (element.branch === selectedBranch) {
+                  setSeletedRooms(previousRooms => [...previousRooms, element])
+                }
+              })
+            } else {
+              setAlert(true)
+              setAlertContent(resRooms.data ? resRooms.data : 'Something Went Wrong!')
+            }
+          }
+        } else {
+          setAlert(true)
+          setAlertContent(resBranch.data ? resBranch.data : 'Something Went Wrong!')
+        }
+      }
+    } catch (err) {
+      setAlert(true)
+      setAlertContent('Something Went Wrong!')
     }
   }, [])
 
@@ -127,7 +142,7 @@ export default function ButtonAppBar () {
         ...addRoom,
         room_number: '',
         room_type: '',
-        room_price: 0,
+        room_price: 0
       })
     } catch (err) {
       setAlert(true)
@@ -219,7 +234,7 @@ export default function ButtonAppBar () {
                 </Stack>
               </Box>
             </Modal>
-            <FormControl style={{width:'210px'}}>
+            <FormControl style={{ width: '210px' }}>
               <InputLabel id='input-branch-label'>Branch</InputLabel>
               <Select
                 labelId='input-branch-label'

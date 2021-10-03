@@ -66,6 +66,23 @@ appNext.prepare().then(async () => {
     }
   })
 
+  app.get('/api/booking', (req, res) => {
+    try {
+      sql.query('SELECT * FROM booking', function (err, results) {
+        if (err) throw err
+        res.json({
+          is_success: true,
+          data: results
+        })
+      })
+    } catch (err) {
+      res.json({
+        is_success: false,
+        data: err.message
+      })
+    }
+  })
+
   app.get('/api/check-rooms', (req, res) => {
     try {
       const que = req.query
@@ -75,7 +92,7 @@ appNext.prepare().then(async () => {
         sql.query(`SELECT * FROM booking WHERE ( check_in <= date_format('${que.check_in}', '%Y-%m-%d') AND check_out > date_format('${que.check_in}', '%Y-%m-%d') ) OR ( check_in >= date_format('${que.check_in}', '%Y-%m-%d') AND check_in < date_format('${que.check_out}', '%Y-%m-%d') )`, async (err, unAvailable) => {
           if (err) throw err
           console.log('allRooms before: ', allRooms)
-          console.log('unAvailable : ',unAvailable)
+          console.log('unAvailable : ', unAvailable)
           await _.forEach(unAvailable, (un) => {
             _.remove(allRooms, (rooms) => {
               return rooms.room_number === un.room_number && rooms.branch === un.branch
@@ -83,12 +100,16 @@ appNext.prepare().then(async () => {
           })
           const filteredRoom = []
           await _.forEach(allRooms, (room) => {
-            if(!_.find(filteredRoom, { room_type: room.room_type })){
+            if (!_.find(filteredRoom, { room_type: room.room_type })) {
               filteredRoom.push({
                 room_type: room.room_type,
                 room_price: room.room_price,
-                branch: room.branch
+                branch: room.branch,
+                room_number: [room.room_number]
               })
+            } else {
+              const indexFound = _.findIndex(filteredRoom, { room_type: room.room_type })
+              filteredRoom[indexFound].room_number = [...filteredRoom[indexFound].room_number, room.room_number]
             }
           })
           console.log('filteredRoom', filteredRoom)

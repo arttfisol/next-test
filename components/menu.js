@@ -25,11 +25,11 @@ export default function Menu ({ number, type, price }) {
           <ListItemText primary='Room' />
         </ListItemButton>
         <Divider />
-        <ListItemButton component='a' href='/admin/book'>
+        <ListItemButton component='a' href='/admin/booking'>
           <ListItemIcon>
             <BookmarkAddIcon />
           </ListItemIcon>
-          <ListItemText primary='Book' />
+          <ListItemText primary='Booking' />
         </ListItemButton>
         <Divider />
         <ListItemButton component='a'>
