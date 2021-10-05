@@ -10,6 +10,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import { forEach, remove, indexOf } from 'lodash'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
+import CreditCardInput from 'react-credit-card-input'
 
 export default function Pages ({ queryString }) {
   const [state, setState] = useState(0)
@@ -97,13 +98,17 @@ export default function Pages ({ queryString }) {
   const steps = ['Room Information', 'Payment', 'Complete']
 
   const handleNextBack = (prop) => (event) => {
+    const timeout = 1.5 * 1000 // 2.0sec
     setOpenBackDrop(true)
     // next + 1, back -1
     let nextState = prop === 'next' ? state + 1 : state - 1
     if (nextState < 0) nextState = 0
     if (nextState > steps.length - 1) nextState = steps.length - 1
     if (nextState !== state) {
-      setState(nextState)
+      setTimeout(() => {
+        setOpenBackDrop(false)
+        setState(nextState)
+      }, timeout)
       if (nextState === steps.length - 1) {
         setCanNext(false)
       } else if (nextState < steps.length - 1) {
@@ -115,10 +120,6 @@ export default function Pages ({ queryString }) {
         setCanBack(true)
       }
     }
-    const timeout = 1.5 * 1000 // 2.0sec
-    setTimeout(() => {
-      setOpenBackDrop(false)
-    }, timeout)
   }
 
   const handleCheckBox = (event) => {
@@ -208,7 +209,45 @@ export default function Pages ({ queryString }) {
             }
             {
                 state === 1 && (
-                  <Grid container style={{ height: '100%' }} />
+                  <Grid container style={{ height: '100%' }}>
+                    <Grid xs={3} />
+                    <Grid xs={6}>
+                      <center>
+                        <Paper elevation={3} style={{ height: '10%', paddingTop: '20px', paddingBottom: '20px', paddingLeft: '10px', paddingRight: '10px', width: '80%' }}>
+                          <CreditCardInput
+                            fieldClassName='input'
+                          />
+                        </Paper>
+                        <Paper elevation={3} style={{ height: '10%', width: '90%', marginTop: '20px', padding: '30px' }}>
+                          <Stack>
+                            <center>
+                              <div>
+                                <TextField label='Firstname' variant='outlined' style={{ marginRight: '10px', width: '44%' }} />
+                                <TextField label='Lastname' variant='outlined' style={{ width: '44%' }} />
+                              </div>
+                              <TextField label='Billing Address' variant='outlined' style={{ margin: '10px', width: '90%' }} />
+                              <TextField label='Billing Address2' variant='outlined' style={{ width: '90%' }} />
+                              <div style={{ marginTop: '10px' }}>
+                                <TextField label='City' variant='outlined' style={{ marginRight: '10px', width: '30%' }} />
+                                <TextField label='Country' variant='outlined' style={{ marginRight: '10px', width: '30%' }} />
+                                <TextField label='Zipcode' variant='outlined' style={{ width: '25%' }} />
+                              </div>
+                            </center>
+                          </Stack>
+                        </Paper>
+                      </center>
+                    </Grid>
+                    <Grid xs={3} />
+                  </Grid>
+                )
+            }
+            {
+                state === 2 && (
+                  <Grid container style={{ height: '100%' }}>
+                    <Typography>
+                      Complete
+                    </Typography>
+                  </Grid>
                 )
             }
           </Paper>
