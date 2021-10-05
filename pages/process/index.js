@@ -11,6 +11,7 @@ import { forEach, remove, indexOf } from 'lodash'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import CreditCardInput from 'react-credit-card-input'
+import axios from 'axios'
 
 export default function Pages ({ queryString }) {
   const [state, setState] = useState(0)
@@ -97,28 +98,52 @@ export default function Pages ({ queryString }) {
   }
   const steps = ['Room Information', 'Payment', 'Complete']
 
-  const handleNextBack = (prop) => (event) => {
+  const handleNextBack = (prop) => async (event) => {
     const timeout = 1.5 * 1000 // 2.0sec
     setOpenBackDrop(true)
     // next + 1, back -1
     let nextState = prop === 'next' ? state + 1 : state - 1
     if (nextState < 0) nextState = 0
     if (nextState > steps.length - 1) nextState = steps.length - 1
+    if (state === 0 && nextState === 1 && checkedRoom.length !== queryString.number_of_room) {
+      return setTimeout(() => {
+        setOpenBackDrop(false)
+        setAlert(true)
+        setAlertContent('Please Select Room(s)')
+      }, timeout)
+    }
+    // state change
     if (nextState !== state) {
-      setTimeout(() => {
+      setTimeout(async () => {
         setOpenBackDrop(false)
         setState(nextState)
+        if (nextState === steps.length - 1) { // next to last state
+          // save booking
+          let response = await axios('/api/booking', {
+            method: 'POST',
+            data: {
+              room_ids: checkedRoom,
+              room_type: queryString.room_type,
+              check_in: queryString.check_in,
+              check_out: queryString.check_out,
+              branch: queryString.branch
+            }
+          })
+          response = response.data
+          if (!response.is_success) {
+            setAlert(true)
+            setAlertContent(response.data ? response.data : 'Something Went Wrong!')
+          }
+          setCanNext(false)
+        } else if (nextState < steps.length - 1) { // next to but not last state
+          setCanNext(true)
+        }
+        if (nextState === 0) { // back to first state
+          setCanBack(false)
+        } else if (nextState > 0) { // back but not first state
+          setCanBack(true)
+        }
       }, timeout)
-      if (nextState === steps.length - 1) {
-        setCanNext(false)
-      } else if (nextState < steps.length - 1) {
-        setCanNext(true)
-      }
-      if (nextState === 0) {
-        setCanBack(false)
-      } else if (nextState > 0) {
-        setCanBack(true)
-      }
     }
   }
 
@@ -294,7 +319,9 @@ Pages.getInitialProps = async ({ query }) => {
     branch: query.branch,
     room_type: query.room_type,
     room_ids: query.room_ids.split(','),
-    number_of_room: parseInt(query.number_of_room, 10)
+    number_of_room: parseInt(query.number_of_room, 10),
+    check_in: query.check_in,
+    check_out: query.check_out
   }
   return {
     queryString

@@ -155,6 +155,11 @@ export default function Pages () {
                       type={room.room_type}
                       detail='{-------------------------------------------------------------------------------------------------------This is for detail of each room---------------------------------------------------------------------------------------------}'
                       price={numberWithCommas(room.room_price)}
+                      number={values.number}
+                      branch={values.branch}
+                      ids={room.room_number.join(',')}
+                      checkIn={values.inout[0].split('T')[0]}
+                      checkOut={values.inout[1].split('T')[0]}
                       key={index}
                     />
                   )

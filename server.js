@@ -237,6 +237,24 @@ appNext.prepare().then(async () => {
     }
   })
 
+  app.post('/api/booking', async (req, res) => {
+    try {
+      const body = req.body
+      const rooms = body.room_ids
+      for (let i = 0; i < rooms.length; i++) {
+        sql.query(`INSERT INTO booking (room_number, room_type, check_in, check_out, branch) VALUES ('${rooms[i]}', '${body.room_type}', '${body.check_in}', '${body.check_out}', '${body.branch}')`, function (err, result) {
+          if (err) throw err
+        })
+      }
+      res.json({ is_success: true })
+    } catch (err) {
+      res.json({
+        is_success: false,
+        data: err.message
+      })
+    }
+  })
+
   app.delete('/api/room', (req, res) => {
     try {
       const body = req.body
