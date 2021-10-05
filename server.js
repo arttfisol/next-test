@@ -1,3 +1,4 @@
+require('dotenv').config()
 const next = require('next')
 const md5 = require('md5')
 const express = require('express')
@@ -15,10 +16,10 @@ const http = require('http').createServer(app)
 
 const mysql = require('mysql')
 const sql = mysql.createConnection({
-  host: 'localhost',
-  user: 'user',
-  password: 'password',
-  database: 'log'
+  host: process.env.SQL_HOST,
+  user: process.env.SQL_USER,
+  password: process.env.SQL_PASSWORD,
+  database: process.env.SQL_DB
 })
 
 sql.connect(function (err) {
