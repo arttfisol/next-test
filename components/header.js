@@ -1,6 +1,6 @@
 import { Paper } from '@mui/material'
 
-export default function Header ({ number, type, price }) {
+export default function Header () {
   return (
     <Paper style={{ height: '10vh', textAlign: 'center' }} elevation={6}>
 

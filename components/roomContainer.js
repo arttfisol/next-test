@@ -16,7 +16,7 @@ const style = {
   p: 4
 }
 
-export default function RoomContainer ({ number, type, price, setRooms }) {
+export default function RoomContainer ({ number, type, price, branch, setRooms }) {
   const [openDel, setOpenDel] = useState(false)
   const handleOpenDel = () => setOpenDel(true)
   const handleCloseDel = () => setOpenDel(false)
@@ -35,15 +35,17 @@ export default function RoomContainer ({ number, type, price, setRooms }) {
       let response = await axios('/api/room', {
         method: 'DELETE',
         data: {
-          room_number: number
+          room_number: number,
+          branch
         }
       })
       response = response.data
       if (response.is_success) {
-        setRooms([])
+        const r = []
         await forEach(response.data, element => {
-          setRooms(previousRooms => [...previousRooms, element])
+          r.push(element)
         })
+        setRooms([...r])
       } else {
         setAlert(true)
         setAlertContent(response.data ? response.data : 'Something Went Wrong!')
@@ -88,7 +90,7 @@ export default function RoomContainer ({ number, type, price, setRooms }) {
               </Typography>
               <br />
               <Typography id='modal-modal-title' variant='body'>
-                Are you sure to delete room number {number} ?
+                Are you sure to delete room number {number} in {branch} ?
               </Typography>
               <br />
               <br />
