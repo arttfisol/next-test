@@ -11,6 +11,7 @@ import { forEach, remove, indexOf } from 'lodash'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import CreditCardInput from 'react-credit-card-input'
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import axios from 'axios'
 
 export default function Pages ({ queryString }) {
@@ -269,9 +270,7 @@ export default function Pages ({ queryString }) {
             {
                 state === 2 && (
                   <Grid container style={{ height: '100%' }}>
-                    <Typography>
-                      Complete
-                    </Typography>
+                    <CheckCircleRoundedIcon color='primary' style={{ width: '100%', height: '100%' }} />
                   </Grid>
                 )
             }
