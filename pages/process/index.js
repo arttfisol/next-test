@@ -231,7 +231,7 @@ export default function Pages ({ queryString }) {
                         onClick={handleNextBack('next')}
                         endIcon={<NavigateNextIcon />}
                       >
-                        Next
+                        {state === 1 ? 'Pay' : 'Next'}
                       </Button>
                     </Box>
                   </Paper>
