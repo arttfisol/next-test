@@ -22,6 +22,7 @@ const sql = mysql.createConnection({
   database: process.env.SQL_DB
 })
 
+const port = process.env.PORT || 3000
 sql.connect(function (err) {
   if (err) { console.log(err) } else { console.log('connected') }
 })
@@ -281,6 +282,6 @@ appNext.prepare().then(async () => {
     return handle(req, res)
   })
 
-  http.listen(3000)
-  console.log('listening port 3000')
+  http.listen(port)
+  console.log('listening port ' + port)
 })
