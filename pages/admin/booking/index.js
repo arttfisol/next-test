@@ -86,7 +86,7 @@ export default function ButtonAppBar () {
   const columns = [
     { id: 'id', label: 'ID', minWidth: 150 },
     { id: 'room_number', label: 'Room Number', minWidth: 200 },
-    { id: 'room_type', label: 'Room Type', minWidth: 200 },
+    { id: 'type_name', label: 'Room Type', minWidth: 200 },
     { id: 'check_in', label: 'Check In', minWidth: 200 },
     { id: 'check_out', label: 'Check Out', minWidth: 200 },
     { id: 'email', label: 'E-mail', minWidth: 200 }
