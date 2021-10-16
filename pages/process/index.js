@@ -124,10 +124,10 @@ export default function Pages ({ queryString }) {
             method: 'POST',
             data: {
               room_ids: checkedRoom,
-              room_type: queryString.room_type,
+              branch_id: queryString.branch_id,
               check_in: queryString.check_in,
               check_out: queryString.check_out,
-              branch: queryString.branch
+              email: queryString.email
             }
           })
           response = response.data
@@ -202,8 +202,8 @@ export default function Pages ({ queryString }) {
                   <Grid container style={{ height: '100%' }}>
                     <Grid item xs={7}>
                       <Stack>
-                        <TextField label='Branch' variant='outlined' defaultValue={queryString.branch} InputProps={{ readOnly: true }} />
-                        <TextField label='Type' variant='outlined' defaultValue={queryString.room_type} InputProps={{ readOnly: true }} style={{ marginTop: '10px' }} />
+                        <TextField label='Branch' variant='outlined' defaultValue={queryString.branch_name} InputProps={{ readOnly: true }} />
+                        <TextField label='Type' variant='outlined' defaultValue={queryString.type_name} InputProps={{ readOnly: true }} style={{ marginTop: '10px' }} />
                         <Typography variant='subtitle1' style={{ marginTop: '20px' }}>Select Room(s) you want &ensp; [ Select {queryString.number_of_room - checkedRoom.length} more room(s) ]</Typography>
                         <PerfectScrollbar style={{ marginTop: '10px', height: '240px' }}>
                           <FormGroup>
@@ -315,12 +315,15 @@ export default function Pages ({ queryString }) {
 
 Pages.getInitialProps = async ({ query }) => {
   const queryString = {
-    branch: query.branch,
-    room_type: query.room_type,
+    branch_name: query.branch_name,
+    branch_id: query.branch_id,
+    type_name: query.type_name,
+    type_id: query.type_id,
     room_ids: query.room_ids.split(','),
     number_of_room: parseInt(query.number_of_room, 10),
     check_in: query.check_in,
-    check_out: query.check_out
+    check_out: query.check_out,
+    email: query.email
   }
   return {
     queryString

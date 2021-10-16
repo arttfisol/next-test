@@ -1,13 +1,23 @@
 import { Paper, Grid, Typography, IconButton, Backdrop, CircularProgress } from '@mui/material'
 import Router from 'next/router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import { get } from 'lodash'
 
-export default function HotelContainer ({ branch, type, detail, price, number, ids, checkIn, checkOut }) {
+export default function HotelContainer ({ branchName, branchId, typeName, typeId, detail, price, number, ids, checkIn, checkOut }) {
+  const [email, setEmail] = useState('')
   const [openBackDrop, setOpenBackDrop] = useState(false)
   const handleBackDropClose = () => {
     setOpenBackDrop(false)
   }
 
+  useEffect(async () => {
+    const resCookie = await axios('/api/get-cookie')
+    if (!get(resCookie, 'data.cookies.email', false)) {
+      return Router.push('/login')
+    }
+    setEmail(get(resCookie, 'data.cookies.email'))
+  })
   const handleClick = () => {
     const timeout = 1.5 * 1000 // 2.0sec
     setOpenBackDrop(true)
@@ -16,12 +26,15 @@ export default function HotelContainer ({ branch, type, detail, price, number, i
       Router.push({
         pathname: '/process',
         query: {
-          branch: branch,
-          room_type: type,
+          branch_name: branchName,
+          branch_id: branchId,
+          type_name: typeName,
+          type_id: typeId,
           room_ids: ids,
           number_of_room: number.toString(),
           check_in: checkIn,
-          check_out: checkOut
+          check_out: checkOut,
+          email
         }
       })
     }, timeout)
@@ -42,7 +55,7 @@ export default function HotelContainer ({ branch, type, detail, price, number, i
           </Grid>
           <Grid item xs={8} style={{ padding: '1%', position: 'relative' }}>
             <Typography variant='h5' gutterBottom style={{ marginTop: '1%', marginBottom: '1%' }}>
-              TYPE: {type}
+              TYPE: {typeName}
             </Typography>
             <Typography variant='h6' gutterBottom style={{ marginTop: '1%', marginBottom: '1%' }}>
               {detail}

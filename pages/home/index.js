@@ -8,7 +8,7 @@ import SkeletonHotelContainer from '../../components/skeleton/hotelContainer'
 import Header from '../../components/header'
 import 'react-perfect-scrollbar/dist/css/styles.css'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { forEach, get } from 'lodash'
+import { forEach, get, isEmpty } from 'lodash'
 import Router from 'next/router'
 
 const now = new Date()
@@ -18,7 +18,7 @@ export default function Pages () {
   const [rooms, setRooms] = useState([])
   const [branch, setBranch] = useState([])
   const [values, setValues] = useState({
-    branch: '',
+    branch_id: 0,
     inout: [new Date().toISOString(), new Date(now.setDate(now.getDate() + 1)).toISOString()],
     // inout: ['2021-09-30T123', '2021-10-01T123'],
     number: 1
@@ -53,7 +53,7 @@ export default function Pages () {
       let resRooms = await axios('/api/check-rooms', {
         method: 'GET',
         params: {
-          branch: values.branch,
+          branch: values.branch_id,
           check_in: values.inout[0].split('T')[0],
           check_out: values.inout[1].split('T')[0],
           number_of_room: values.number
@@ -94,13 +94,14 @@ export default function Pages () {
           await forEach(resBranch.data, element => {
             setBranch(previousRooms => [...previousRooms, element])
           })
-          const selectedBranch = resBranch.data.length ? resBranch.data[0].name : ''
-          setValues({ ...values, branch: selectedBranch })
-          if (!rooms.length && selectedBranch) {
+          const selectedBranch = resBranch.data.length ? resBranch.data[0] : ''
+          console.log('selectedBranch', selectedBranch)
+          setValues({ ...values, branch_id: selectedBranch.branch_id })
+          if (!rooms.length && !isEmpty(selectedBranch)) {
             let resRooms = await axios('/api/check-rooms', {
               method: 'GET',
               params: {
-                branch: selectedBranch,
+                branch_id: selectedBranch.branch_id,
                 check_in: values.inout[0].split('T')[0],
                 check_out: values.inout[1].split('T')[0],
                 number_of_room: values.number
@@ -155,14 +156,16 @@ export default function Pages () {
                 : rooms.map((room, index) => {
                   return (
                     <HotalContainer
-                      type={room.room_type}
-                      detail='{-------------------------------------------------------------------------------------------------------This is for detail of each room---------------------------------------------------------------------------------------------}'
+                      typeName={room.type_name}
+                      typeId={room.type_id}
+                      detail={room.detail}
                       price={numberWithCommas(room.room_price)}
-                      number={values.number}
-                      branch={values.branch}
+                      branchName={room.branch_name}
+                      branchId={room.branch_id}
                       ids={room.room_number.join(',')}
                       checkIn={values.inout[0].split('T')[0]}
                       checkOut={values.inout[1].split('T')[0]}
+                      number={values.number}
                       key={index}
                     />
                   )

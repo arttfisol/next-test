@@ -8,7 +8,7 @@ export default function ButtonAppBar () {
   const [booking, setBooking] = useState([])
   const [selectedBooking, setSelectedBooking] = useState([])
   const [branch, setBranch] = useState([])
-  const [selectedBranch, setSelectedBranch] = useState('')
+  const [selectedBranch, setSelectedBranch] = useState({})
 
   const [alert, setAlert] = useState(false)
   const [alertContent, setAlertContent] = useState('')
@@ -32,14 +32,11 @@ export default function ButtonAppBar () {
   }
 
   useEffect(async () => {
-    console.log('selectedBranch ', selectedBranch)
-    console.log('booking ', booking)
     const sBooking = []
     await forEach(booking, element => {
-      element.branch === selectedBranch && sBooking.push(element)
+      element.branch === selectedBranch.branch_id && sBooking.push(element)
     })
     setSelectedBooking([...sBooking])
-    console.log('sBooking ', sBooking)
   }, [selectedBranch, booking])
 
   useEffect(async () => {
@@ -51,7 +48,7 @@ export default function ButtonAppBar () {
           await forEach(resBranch.data, element => {
             setBranch(previousBranch => [...previousBranch, element])
           })
-          const sBranch = resBranch.data.length ? resBranch.data[0].name : ''
+          const sBranch = resBranch.data.length ? resBranch.data[0] : ''
           setSelectedBranch(sBranch)
 
           if (!booking.length) {
@@ -60,13 +57,12 @@ export default function ButtonAppBar () {
             if (resBooking.is_success) {
               await forEach(resBooking.data, element => {
                 setBooking(previousBooking => [...previousBooking, element])
-                if (element.branch === sBranch) {
+                if (element.branch_id === sBranch.branch_id) {
                   element.check_in = element.check_in.split('T')[0]
                   element.check_out = element.check_out.split('T')[0]
                   setSelectedBooking(previousBooking => [...previousBooking, element])
                 }
               })
-              console.log('selectedBooking ', selectedBooking)
             } else {
               setAlert(true)
               setAlertContent(resBooking.data ? resBooking.data : 'Something Went Wrong!')
@@ -92,7 +88,8 @@ export default function ButtonAppBar () {
     { id: 'room_number', label: 'Room Number', minWidth: 200 },
     { id: 'room_type', label: 'Room Type', minWidth: 200 },
     { id: 'check_in', label: 'Check In', minWidth: 200 },
-    { id: 'check_out', label: 'Check Out', minWidth: 200 }
+    { id: 'check_out', label: 'Check Out', minWidth: 200 },
+    { id: 'email', label: 'E-mail', minWidth: 200 }
   ]
 
   return (

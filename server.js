@@ -36,7 +36,8 @@ const cookieOptions = {
 }
 
 const queryCommands = {
-  getRooms: 'SELECT r.id, r.room_number, r.type_id, t.type_name, r.branch_id,b.branch_name, t.price, t.detail FROM room r LEFT JOIN rtype t ON r.type_id = t.type_id LEFT JOIN branch b ON r.branch_id = b.branch_id'
+  getRooms: 'SELECT r.id, r.room_number, r.type_id, t.type_name, r.branch_id,b.branch_name, t.price, t.detail FROM room r LEFT JOIN rtype t ON r.type_id = t.type_id LEFT JOIN branch b ON r.branch_id = b.branch_id',
+  checkRooms: 'SELECT book.id, book.room_number, room.type_name, book.branch_id, room.branch_name, book.check_in, book.check_out, book.email FROM booking book LEFT JOIN ( SELECT r.id, r.room_number, r.type_id, t.type_name, r.branch_id,b.branch_name, t.price, t.detail FROM room r LEFT JOIN rtype t ON r.type_id = t.type_id LEFT JOIN branch b ON r.branch_id = b.branch_id) room ON book.room_number = room.room_number AND book.branch_id = room.branch_id'
 }
 
 appNext.prepare().then(async () => {
@@ -114,28 +115,31 @@ appNext.prepare().then(async () => {
     try {
       const que = req.query
       console.log('que ', que)
-      sql.query(`SELECT * FROM room WHERE branch= '${que.branch}'`, function (err, allRooms) {
+      sql.query(`${queryCommands.getRooms} WHERE r.branch_id= '${que.branch_id}'`, function (err, allRooms) {
         if (err) throw err
-        sql.query(`SELECT * FROM booking WHERE ( check_in <= date_format('${que.check_in}', '%Y-%m-%d') AND check_out > date_format('${que.check_in}', '%Y-%m-%d') ) OR ( check_in >= date_format('${que.check_in}', '%Y-%m-%d') AND check_in < date_format('${que.check_out}', '%Y-%m-%d') )`, async (err, unAvailable) => {
+        sql.query(`${queryCommands.checkRooms} WHERE ( book.check_in <= date_format('${que.check_in}', '%Y-%m-%d') AND book.check_out > date_format('${que.check_in}', '%Y-%m-%d') ) OR ( book.check_in >= date_format('${que.check_in}', '%Y-%m-%d') AND book.check_in < date_format('${que.check_out}', '%Y-%m-%d') )`, async (err, unAvailable) => {
           if (err) throw err
           console.log('allRooms before: ', allRooms)
           console.log('unAvailable : ', unAvailable)
           await _.forEach(unAvailable, (un) => {
             _.remove(allRooms, (rooms) => {
-              return rooms.room_number === un.room_number && rooms.branch === un.branch
+              return rooms.room_number === un.room_number && rooms.branch_id === un.branch_id
             })
           })
           const filteredRoom = []
           await _.forEach(allRooms, (room) => {
-            if (!_.find(filteredRoom, { room_type: room.room_type })) {
+            if (!_.find(filteredRoom, { type_id: room.type_id })) {
               filteredRoom.push({
-                room_type: room.room_type,
-                room_price: room.room_price,
-                branch: room.branch,
+                type_name: room.type_name,
+                type_id: room.type_id,
+                room_price: room.price,
+                branch_name: room.branch_name,
+                branch_id: room.branch_id,
+                detail: room.detail,
                 room_number: [room.room_number]
               })
             } else {
-              const indexFound = _.findIndex(filteredRoom, { room_type: room.room_type })
+              const indexFound = _.findIndex(filteredRoom, { type_id: room.type_id })
               filteredRoom[indexFound].room_number = [...filteredRoom[indexFound].room_number, room.room_number]
             }
           })
