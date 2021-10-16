@@ -8,7 +8,8 @@ import SkeletonHotelContainer from '../../components/skeleton/hotelContainer'
 import Header from '../../components/header'
 import 'react-perfect-scrollbar/dist/css/styles.css'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { forEach } from 'lodash'
+import { forEach, get } from 'lodash'
+import Router from 'next/router'
 
 const now = new Date()
 
@@ -40,7 +41,6 @@ export default function Pages () {
 
   const handleDateChange = (prop) => (event) => {
     try {
-      console.log(values.inout)
       setValues({
         ...values, [prop]: [event[0].toISOString(), event[1].toISOString()]
       })
@@ -83,6 +83,10 @@ export default function Pages () {
   useEffect(async () => {
     try {
       setLoading(true)
+      const resCookie = await axios('/api/get-cookie')
+      if (!get(resCookie, 'data.cookies.email', false)) {
+        return Router.push('/login')
+      }
       if (!branch.length) {
         let resBranch = await axios('/api/branch')
         resBranch = resBranch.data
@@ -91,7 +95,6 @@ export default function Pages () {
             setBranch(previousRooms => [...previousRooms, element])
           })
           const selectedBranch = resBranch.data.length ? resBranch.data[0].name : ''
-          console.log('first selectedBranch', selectedBranch)
           setValues({ ...values, branch: selectedBranch })
           if (!rooms.length && selectedBranch) {
             let resRooms = await axios('/api/check-rooms', {

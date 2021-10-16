@@ -5,7 +5,7 @@ import 'react-perfect-scrollbar/dist/css/styles.css'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import Menu from '../../../components/menu'
 import axios from 'axios'
-import { forEach, find } from 'lodash'
+import { forEach, find, isEmpty } from 'lodash'
 import RoomContainer from '../../../components/roomContainer'
 
 export default function ButtonAppBar () {
@@ -15,19 +15,28 @@ export default function ButtonAppBar () {
   const [branch, setBranch] = useState([])
   const [addRoom, setAddRoom] = useState({
     room_number: '',
+    room_type_id: 0,
     room_type: '',
     room_price: 0,
-    branch: ''
+    branch_name: '',
+    branch_id: 0
   })
 
   const handleAddChange = (prop) => async (event) => {
+    console.log('event.target.value: ', event.target.value)
+    console.log('find(branch, { branch_name: event.target.value }): ', find(branch, { branch_name: event.target.value }))
     if (prop === 'room_type') {
-      const selectedType = find(roomTypes, { type: event.target.value })
-      setAddRoom({ ...addRoom, [prop]: event.target.value, room_price: selectedType.price })
+      const selectedType = find(roomTypes, { type_name: event.target.value })
+      setAddRoom({ ...addRoom, [prop]: event.target.value, room_price: selectedType.price, room_type_id: selectedType.type_id })
+    } else if (prop === 'branch_name') {
+      const selectedBranch = find(branch, { branch_name: event.target.value })
+      console.log('selectedBranch: ', selectedBranch)
+      setAddRoom({ ...addRoom, [prop]: event.target.value, branch_id: selectedBranch.branch_id })
     } else {
       setAddRoom({ ...addRoom, [prop]: event.target.value })
     }
   }
+
   const [openAdd, setOpenAdd] = useState(false)
   const handleOpenAdd = () => setOpenAdd(true)
   const handleCloseAdd = () => setOpenAdd(false)
@@ -43,10 +52,10 @@ export default function ButtonAppBar () {
   useEffect(async () => {
     const sRoom = []
     await forEach(rooms, element => {
-      element.branch === addRoom.branch && sRoom.push(element)
+      element.branch_id === addRoom.branch_id && sRoom.push(element)
     })
     setSeletedRooms([...sRoom])
-  }, [addRoom.branch, rooms])
+  }, [addRoom.branch_name, rooms])
 
   useEffect(async () => {
     try {
@@ -70,15 +79,16 @@ export default function ButtonAppBar () {
           await forEach(resBranch.data, element => {
             setBranch(previousRooms => [...previousRooms, element])
           })
-          const selectedBranch = resBranch.data.length ? resBranch.data[0].name : ''
-          setAddRoom({ ...addRoom, branch: selectedBranch })
-          if (!rooms.length && selectedBranch) {
+          const selectedBranch = resBranch.data.length ? resBranch.data[0] : {}
+          setAddRoom({ ...addRoom, branch_name: selectedBranch.branch_name, branch_id: selectedBranch.branch_id })
+          if (!rooms.length && !isEmpty(selectedBranch)) {
             let resRooms = await axios('/api/rooms')
             resRooms = resRooms.data
             if (resRooms.is_success) {
               await forEach(resRooms.data, element => {
                 setRooms(previousRooms => [...previousRooms, element])
-                if (element.branch === selectedBranch) {
+                if (element.branch_id === selectedBranch.branch_id) {
+                  console.log('element: ', element)
                   setSeletedRooms(previousRooms => [...previousRooms, element])
                 }
               })
@@ -112,7 +122,7 @@ export default function ButtonAppBar () {
 
   const submitAddForm = async () => {
     try {
-      if (addRoom.room_number === '' || addRoom.room_type === '' || addRoom.room_price === 0) {
+      if (addRoom.room_number === '' || addRoom.room_type_id === 0 || addRoom.branch_id === '') {
         setAlert(true)
         setAlertContent('Must Fill All Fields')
         return
@@ -121,15 +131,15 @@ export default function ButtonAppBar () {
         method: 'POST',
         data: {
           room_number: addRoom.room_number,
-          room_type: addRoom.room_type,
-          room_price: addRoom.room_price,
-          branch: addRoom.branch
+          type_id: addRoom.room_type_id,
+          branch_id: addRoom.branch_id
         }
       })
       response = response.data
       if (response.is_success) {
         const r = []
         await forEach(response.data, element => {
+          console.log('res: ', element)
           r.push(element)
         })
         setRooms([...r])
@@ -141,6 +151,7 @@ export default function ButtonAppBar () {
       setAddRoom({
         ...addRoom,
         room_number: '',
+        room_type_id: 0,
         room_type: '',
         room_price: 0
       })
@@ -198,14 +209,14 @@ export default function ButtonAppBar () {
                     <Select
                       labelId='input-add-room_type-label'
                       id='input-add-room_type'
-                      value={addRoom.room_type}
+                      value={addRoom.room_type.type_name}
                       label='Room Type'
                       onChange={handleAddChange('room_type')}
                     >
                       {
                         roomTypes.map((type, index) => {
                           return (
-                            <MenuItem value={type.type} key={index}>{type.type}</MenuItem>
+                            <MenuItem value={type.type_name} key={index}>{type.type_name}</MenuItem>
                           )
                         })
                       }
@@ -239,14 +250,14 @@ export default function ButtonAppBar () {
               <Select
                 labelId='input-branch-label'
                 id='input-branch'
-                value={addRoom.branch}
+                value={addRoom.branch_name}
                 label='Branch'
-                onChange={handleAddChange('branch')}
+                onChange={handleAddChange('branch_name')}
               >
                 {
                   branch.map((branch, index) => {
                     return (
-                      <MenuItem value={branch.name} key={index}>{branch.name}</MenuItem>
+                      <MenuItem value={branch.branch_name} key={index}>{branch.branch_name}</MenuItem>
                     )
                   })
                 }
@@ -260,10 +271,11 @@ export default function ButtonAppBar () {
                   return (
                     <Grid item xs={3} key={index}>
                       <RoomContainer
-                        number={seletedRoom.room_number}
-                        type={seletedRoom.room_type}
-                        price={numberWithCommas(seletedRoom.room_price)}
-                        branch={seletedRoom.branch}
+                        RoomNumber={seletedRoom.room_number}
+                        type={seletedRoom.type_name}
+                        price={numberWithCommas(seletedRoom.price)}
+                        branchId={seletedRoom.branch_id}
+                        branchName={seletedRoom.branch_name}
                         setRooms={setRooms}
                       />
                     </Grid>

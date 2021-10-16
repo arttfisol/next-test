@@ -27,6 +27,18 @@ sql.connect(function (err) {
   if (err) { console.log(err) } else { console.log('connected') }
 })
 
+const cookie = require('cookie')
+const cookieOptions = {
+  sameSite: 'none',
+  secure: true,
+  httpOnly: true,
+  maxAge: 60 * 60 * 24 * 7 // 1 week
+}
+
+const queryCommands = {
+  getRooms: 'SELECT r.id, r.room_number, r.type_id, t.type_name, r.branch_id,b.branch_name, t.price, t.detail FROM room r LEFT JOIN rtype t ON r.type_id = t.type_id LEFT JOIN branch b ON r.branch_id = b.branch_id'
+}
+
 appNext.prepare().then(async () => {
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
@@ -35,6 +47,18 @@ appNext.prepare().then(async () => {
 
   app.get('/ping', (req, res) => {
     res.send('pong')
+  })
+
+  app.get('/api/logout', (req, res) => {
+    const cookies = []
+    cookies.push(cookie.serialize('email', '', { maxAge: 0 }))
+    cookies.push(cookie.serialize('is_admin', '', { maxAge: 0 }))
+    res.setHeader('Set-Cookie', cookies)
+    res.json({ is_success: true })
+  })
+
+  app.get('/api/get-cookie', (req, res) => {
+    return res.json({ cookies: cookie.parse(req.headers.cookie || '') })
   })
 
   app.get('/api/hotels', (req, res) => {
@@ -53,8 +77,9 @@ appNext.prepare().then(async () => {
 
   app.get('/api/rooms', (req, res) => {
     try {
-      sql.query('SELECT * FROM room', function (err, results) {
+      sql.query(queryCommands.getRooms, function (err, results) {
         if (err) throw err
+        console.log('data: ', results)
         res.json({
           is_success: true,
           data: results
@@ -168,10 +193,16 @@ appNext.prepare().then(async () => {
     try {
       const body = req.body
       sql.query(`SELECT * FROM users WHERE email = '${body.email}' AND password = '${md5(body.password)}'`, function (err, results) {
-        if (err) throw err
+        if (err) {
+          throw err
+        }
         if (!results.length) {
           return res.json({ is_success: false })
         }
+        const cookies = []
+        cookies.push(cookie.serialize('email', body.email, cookieOptions))
+        cookies.push(cookie.serialize('is_admin', body.email.includes('admin'), cookieOptions))
+        res.setHeader('Set-Cookie', cookies)
         return res.json({ is_success: true })
       })
     } catch (err) {
@@ -209,7 +240,7 @@ appNext.prepare().then(async () => {
   app.post('/api/room', (req, res) => {
     try {
       const body = req.body
-      sql.query(`SELECT * FROM room WHERE room_number='${body.room_number}' AND branch='${body.branch}'`, function (err, results) {
+      sql.query(`SELECT * FROM room WHERE room_number='${body.room_number}' AND branch_id=${body.branch_id}`, function (err, results) {
         if (err) throw err
         if (results.length) {
           console.log('Room Already Exists')
@@ -218,10 +249,10 @@ appNext.prepare().then(async () => {
             data: 'Room Already Exists'
           })
         }
-        sql.query(`INSERT INTO room (room_number, room_type, room_price, available, branch) VALUES ('${body.room_number}', '${body.room_type}', ${body.room_price}, TRUE, '${body.branch}')`, function (err, result) {
+        sql.query(`INSERT INTO room (room_number, type_id, branch_id) VALUES ('${body.room_number}', ${body.type_id}, ${body.branch_id})`, function (err, result) {
           if (err) throw err
-          console.log(`Insert Room Number ${body.room_number} Branch ${body.branch} Success`)
-          sql.query('SELECT * FROM room', function (err, results) {
+          console.log(`Insert Room Number ${body.room_number} Branch ${body.branch_id} Success`)
+          sql.query(queryCommands.getRooms, function (err, results) {
             if (err) throw err
             res.json({
               is_success: true,
@@ -259,10 +290,10 @@ appNext.prepare().then(async () => {
   app.delete('/api/room', (req, res) => {
     try {
       const body = req.body
-      sql.query(`DELETE FROM room WHERE room_number = '${body.room_number}' AND branch= '${body.branch}'`, function (err, result) {
+      sql.query(`DELETE FROM room WHERE room_number = '${body.room_number}' AND branch_id= '${body.branch_id}'`, function (err, result) {
         if (err) throw err
-        console.log(`Delete Room Number ${body.room_number} Branch ${body.branch} Success`)
-        sql.query('SELECT * FROM room', function (err, results) {
+        console.log(`Delete Room Number ${body.room_number} Branch ${body.branch_id} Success`)
+        sql.query(queryCommands.getRooms, function (err, results) {
           if (err) throw err
           res.json({
             is_success: true,

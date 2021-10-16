@@ -16,7 +16,7 @@ const style = {
   p: 4
 }
 
-export default function RoomContainer ({ number, type, price, branch, setRooms }) {
+export default function RoomContainer ({ RoomNumber, type, price, branchId, branchName, setRooms }) {
   const [openDel, setOpenDel] = useState(false)
   const handleOpenDel = () => setOpenDel(true)
   const handleCloseDel = () => setOpenDel(false)
@@ -35,8 +35,8 @@ export default function RoomContainer ({ number, type, price, branch, setRooms }
       let response = await axios('/api/room', {
         method: 'DELETE',
         data: {
-          room_number: number,
-          branch
+          room_number: RoomNumber,
+          branch_id: branchId
         }
       })
       response = response.data
@@ -67,7 +67,7 @@ export default function RoomContainer ({ number, type, price, branch, setRooms }
         />
         <CardContent>
           <Typography gutterBottom variant='h6' component='div'>
-            Room Number: {number}
+            Room Number: {RoomNumber}
           </Typography>
           <Typography gutterBottom variant='h6' component='div'>
             Room Type: {type}
@@ -90,7 +90,7 @@ export default function RoomContainer ({ number, type, price, branch, setRooms }
               </Typography>
               <br />
               <Typography id='modal-modal-title' variant='body'>
-                Are you sure to delete room number {number} in {branch} ?
+                Are you sure to delete room number {RoomNumber} in {branchName} ?
               </Typography>
               <br />
               <br />
