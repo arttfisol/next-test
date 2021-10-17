@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Grid, Stack, Select, FormControl, InputLabel, MenuItem, TextField, OutlinedInput, Box, Paper, Snackbar, Alert, Button } from '@mui/material'
+import { Grid, Stack, Select, FormControl, InputLabel, MenuItem, TextField, OutlinedInput, Box, Paper, Snackbar, Alert, Button, Backdrop, CircularProgress } from '@mui/material'
 import { LocalizationProvider, DateRangePicker } from '@mui/lab'
 import axios from 'axios'
 import AdapterDayJS from '@mui/lab/AdapterDayJS'
@@ -8,7 +8,7 @@ import SkeletonHotelContainer from '../../components/skeleton/hotelContainer'
 import Header from '../../components/header'
 import 'react-perfect-scrollbar/dist/css/styles.css'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { forEach, get, isEmpty } from 'lodash'
+import { forEach, get, isEmpty, find } from 'lodash'
 import Router from 'next/router'
 
 const now = new Date()
@@ -19,10 +19,16 @@ export default function Pages () {
   const [branch, setBranch] = useState([])
   const [values, setValues] = useState({
     branch_id: 0,
+    branch_name: '',
     inout: [new Date().toISOString(), new Date(now.setDate(now.getDate() + 1)).toISOString()],
     // inout: ['2021-09-30T123', '2021-10-01T123'],
     number: 1
   })
+
+  const [openBackDrop, setOpenBackDrop] = useState(false)
+  const handleBackDropClose = () => {
+    setOpenBackDrop(false)
+  }
 
   const [alert, setAlert] = useState(false)
   const [alertContent, setAlertContent] = useState('')
@@ -34,26 +40,33 @@ export default function Pages () {
   }
 
   const handleChange = (prop) => (event) => {
-    setValues({
-      ...values, [prop]: event.target.value
-    })
-  }
-
-  const handleDateChange = (prop) => (event) => {
     try {
-      setValues({
-        ...values, [prop]: [event[0].toISOString(), event[1].toISOString()]
-      })
+      if (prop === 'branch_name') {
+        const selectedBranch = find(branch, { branch_name: event.target.value })
+        setValues({ ...values, [prop]: event.target.value, branch_id: selectedBranch.branch_id })
+      } else if (prop === 'inout') {
+        setValues({
+          ...values, [prop]: [event[0].toISOString(), event[1].toISOString()]
+        })
+      } else {
+        setValues({
+          ...values, [prop]: event.target.value
+        })
+      }
     } catch (err) {}
   }
 
   const submitFilter = async () => {
     try {
       setLoading(true)
+      setOpenBackDrop(true)
+      setTimeout(() => {
+        setOpenBackDrop(false)
+      }, 1000)
       let resRooms = await axios('/api/check-rooms', {
         method: 'GET',
         params: {
-          branch: values.branch_id,
+          branch_id: values.branch_id,
           check_in: values.inout[0].split('T')[0],
           check_out: values.inout[1].split('T')[0],
           number_of_room: values.number
@@ -83,6 +96,10 @@ export default function Pages () {
   useEffect(async () => {
     try {
       setLoading(true)
+      setOpenBackDrop(true)
+      setTimeout(() => {
+        setOpenBackDrop(false)
+      }, 1000)
       const resCookie = await axios('/api/get-cookie')
       if (!get(resCookie, 'data.cookies.email', false)) {
         return Router.push('/login')
@@ -96,7 +113,7 @@ export default function Pages () {
           })
           const selectedBranch = resBranch.data.length ? resBranch.data[0] : ''
           console.log('selectedBranch', selectedBranch)
-          setValues({ ...values, branch_id: selectedBranch.branch_id })
+          setValues({ ...values, branch_id: selectedBranch.branch_id, branch_name: selectedBranch.branch_name })
           if (!rooms.length && !isEmpty(selectedBranch)) {
             let resRooms = await axios('/api/check-rooms', {
               method: 'GET',
@@ -140,6 +157,13 @@ export default function Pages () {
     <div style={{ backgroundImage: 'url("bg1.jpeg")', width: '100vw', height: '100vh', overflow: 'hidden' }}>
       <Header />
       <br />
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={openBackDrop}
+        onClick={handleBackDropClose}
+      >
+        <CircularProgress color='inherit' />
+      </Backdrop>
       <Grid container>
         <Grid item xs={1} />
         <Grid item xs={7} style={{ height: '80vh' }}>
@@ -181,14 +205,14 @@ export default function Pages () {
                 <Select
                   labelId='input-location-label'
                   id='input-location'
-                  value={values.branch}
+                  value={values.branch_name}
                   label='Location'
-                  onChange={handleChange('branch')}
+                  onChange={handleChange('branch_name')}
                 >
                   {
                     branch.map((branch, index) => {
                       return (
-                        <MenuItem value={branch.name} key={index}>{branch.name}</MenuItem>
+                        <MenuItem value={branch.branch_name} key={index}>{branch.branch_name}</MenuItem>
                       )
                     })
                   }
@@ -201,7 +225,7 @@ export default function Pages () {
                     startText='Check-In'
                     endText='Check-Out'
                     value={values.inout}
-                    onChange={handleDateChange('inout')}
+                    onChange={handleChange('inout')}
                     renderInput={(startProps, endProps) => (
                       <>
                         <TextField {...startProps} style={{ width: '50%' }} />

@@ -165,12 +165,21 @@ export default function Pages ({ queryString }) {
     }
   }
 
+  function sleep (ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms)
+    })
+  }
+
   useEffect(async () => {
+    setOpenBackDrop(true)
     const rooms = []
     await forEach(queryString.room_ids, () => {
       rooms.push(false)
     })
     setCheck(rooms)
+    await sleep(1000)
+    setOpenBackDrop(false)
   }, [])
 
   return (

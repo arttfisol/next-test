@@ -1,4 +1,4 @@
-import { Paper, Grid, Menu, IconButton, MenuItem } from '@mui/material'
+import { Paper, Grid, Menu, IconButton, MenuItem, Backdrop, CircularProgress } from '@mui/material'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { useState } from 'react'
 import Router from 'next/router'
@@ -15,12 +15,32 @@ export default function Header () {
   }
 
   const handleLogout = async () => {
+    setOpenBackDrop(true)
     await axios('/api/logout')
+    await sleep(1000)
     Router.push('/login')
+  }
+
+  const [openBackDrop, setOpenBackDrop] = useState(false)
+  const handleBackDropClose = () => {
+    setOpenBackDrop(false)
+  }
+
+  function sleep (ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms)
+    })
   }
 
   return (
     <Paper style={{ height: '10vh', textAlign: 'center' }} elevation={6}>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={openBackDrop}
+        onClick={handleBackDropClose}
+      >
+        <CircularProgress color='inherit' />
+      </Backdrop>
       <Grid container style={{ height: '100%' }}>
         <Grid item xs={1} />
         <Grid item xs={10} style={{ height: '100%', textAlign: 'center' }}>

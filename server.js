@@ -201,7 +201,7 @@ appNext.prepare().then(async () => {
           throw err
         }
         if (!results.length) {
-          return res.json({ is_success: false })
+          return res.json({ is_success: false, data: 'email or password is incorrect!' })
         }
         const cookies = []
         cookies.push(cookie.serialize('email', body.email, cookieOptions))
@@ -278,7 +278,7 @@ appNext.prepare().then(async () => {
       const body = req.body
       const rooms = body.room_ids
       for (let i = 0; i < rooms.length; i++) {
-        sql.query(`INSERT INTO booking (room_number, room_type, check_in, check_out, branch) VALUES ('${rooms[i]}', '${body.room_type}', '${body.check_in}', '${body.check_out}', '${body.branch}')`, function (err, result) {
+        sql.query(`INSERT INTO booking (room_number, branch_id, check_in, check_out, email) VALUES ('${rooms[i]}', '${body.branch_id}', '${body.check_in}', '${body.check_out}', '${body.email}')`, function (err, result) {
           if (err) throw err
         })
       }

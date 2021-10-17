@@ -1,6 +1,6 @@
 
-import { useState } from 'react'
-import { Stack, Button, Paper, InputLabel, OutlinedInput, FormControl, InputAdornment, IconButton, Typography, Link, TextField, Alert, Snackbar } from '@mui/material'
+import { useState, useEffect } from 'react'
+import { Stack, Button, Paper, InputLabel, OutlinedInput, FormControl, InputAdornment, IconButton, Typography, Link, TextField, Alert, Snackbar, Backdrop, CircularProgress } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { DatePicker, LocalizationProvider } from '@mui/lab'
 import AdapterDayJS from '@mui/lab/AdapterDayJS'
@@ -58,12 +58,25 @@ export default function Pages () {
     setShowCPassword(!showCPassword)
   }
 
+  const [openBackDrop, setOpenBackDrop] = useState(false)
+  const handleBackDropClose = () => {
+    setOpenBackDrop(false)
+  }
+  function sleep (ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms)
+    })
+  }
+
   const submitForm = async () => {
     try {
     // check empty
+      setOpenBackDrop(true)
       console.log('values ', values)
       for (const prop in values) {
         if (values[prop] === '') {
+          await sleep(500)
+          setOpenBackDrop(false)
           setAlert(true)
           setAlertContent('Must Fill All Fields')
           return
@@ -72,11 +85,14 @@ export default function Pages () {
 
       // check password and cpassword
       if (values.password !== values.cpassword) {
+        await sleep(500)
+        setOpenBackDrop(false)
         setAlert(true)
         setAlertContent('Password Not Equal to Confirm Password')
         return
       }
 
+      await sleep(1500)
       let response = await axios('/api/register', {
         method: 'POST',
         data: {
@@ -94,18 +110,34 @@ export default function Pages () {
       if (response.is_success) {
         Router.push('/login')
       } else {
+        setOpenBackDrop(false)
         setAlert(true)
         setAlertContent(response.data ? response.data : 'Something Went Wrong!')
       }
     } catch (err) {
+      await sleep(1000)
+      setOpenBackDrop(false)
       setAlert(true)
       setAlertContent('Something Went Wrong!')
     }
   }
 
+  useEffect(async () => {
+    setOpenBackDrop(true)
+    await sleep(1000)
+    setOpenBackDrop(false)
+  }, [])
+
   return (
     <div style={{ backgroundImage: 'url("bg1.jpeg")', width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center' }}>
       <Paper elevation={16} style={{ padding: '2.2% 5%', width: '17%', height: '87%', marginTop: '1%' }}>
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={openBackDrop}
+          onClick={handleBackDropClose}
+        >
+          <CircularProgress color='inherit' />
+        </Backdrop>
         <Stack
           spacing={2}
           noValidate

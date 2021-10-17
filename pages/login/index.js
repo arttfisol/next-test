@@ -1,6 +1,6 @@
 
-import { useState } from 'react'
-import { Stack, Button, Paper, InputLabel, OutlinedInput, FormControl, InputAdornment, IconButton, Typography, Link, Alert, Snackbar } from '@mui/material'
+import { useState, useEffect } from 'react'
+import { Stack, Button, Paper, InputLabel, OutlinedInput, FormControl, InputAdornment, IconButton, Typography, Link, Alert, Snackbar, Backdrop, CircularProgress } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import Router from 'next/router'
 import axios from 'axios'
@@ -11,6 +11,11 @@ export default function Pages () {
     password: '',
     showPassword: false
   })
+
+  const [openBackDrop, setOpenBackDrop] = useState(false)
+  const handleBackDropClose = () => {
+    setOpenBackDrop(false)
+  }
 
   const [alert, setAlert] = useState(false)
   const [alertContent, setAlertContent] = useState('')
@@ -36,9 +41,18 @@ export default function Pages () {
     event.preventDefault()
   }
 
+  function sleep (ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms)
+    })
+  }
+
   const submitForm = async () => {
     try {
+      setOpenBackDrop(true)
       if (values.email === '' || values.password === '') {
+        await sleep(500)
+        setOpenBackDrop(false)
         setAlert(true)
         setAlertContent('Must Fill All Fields')
         return
@@ -52,22 +66,40 @@ export default function Pages () {
         }
       })
       response = response.data
+      await sleep(1500)
       if (response.is_success) {
         if (values.email === 'test@gmail.com') {
           Router.push('/admin/room')
         }
         Router.push('/home')
       } else {
+        setOpenBackDrop(false)
         setAlert(true)
         setAlertContent(response.data ? response.data : 'Something Went Wrong!')
       }
     } catch (err) {
+      await sleep(1000)
+      setOpenBackDrop(false)
       setAlert(true)
       setAlertContent('Something Went Wrong!')
     }
   }
+
+  useEffect(async () => {
+    setOpenBackDrop(true)
+    await sleep(1000)
+    setOpenBackDrop(false)
+  }, [])
+
   return (
     <div style={{ backgroundImage: 'url("bg1.jpeg")', width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center' }}>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={openBackDrop}
+        onClick={handleBackDropClose}
+      >
+        <CircularProgress color='inherit' />
+      </Backdrop>
       <Paper elevation={16} style={{ padding: '5%', width: '15%', height: '40%', marginTop: '10%' }}>
         <Stack
           spacing={2}

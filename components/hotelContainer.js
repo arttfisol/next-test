@@ -22,7 +22,6 @@ export default function HotelContainer ({ branchName, branchId, typeName, typeId
     const timeout = 1.5 * 1000 // 2.0sec
     setOpenBackDrop(true)
     setTimeout(() => {
-      setOpenBackDrop(false)
       Router.push({
         pathname: '/process',
         query: {
@@ -54,11 +53,11 @@ export default function HotelContainer ({ branchName, branchId, typeName, typeId
             <img src='pic_test.jpg' style={{ objectFit: 'cover', width: '90%', height: '90%', borderRadius: '10%' }} />
           </Grid>
           <Grid item xs={8} style={{ padding: '1%', position: 'relative' }}>
-            <Typography variant='h5' gutterBottom style={{ marginTop: '1%', marginBottom: '1%' }}>
-              TYPE: {typeName}
+            <Typography variant='h6' gutterBottom style={{ marginTop: '2%', marginBottom: '1%', textAlign: 'left' }}>
+              Type : {typeName}
             </Typography>
-            <Typography variant='h6' gutterBottom style={{ marginTop: '1%', marginBottom: '1%' }}>
-              {detail}
+            <Typography variant='h6' gutterBottom style={{ marginTop: '1%', marginBottom: '1%', textAlign: 'left' }}>
+              Detail : {detail}
             </Typography>
             <Typography variant='h6' gutterBottom style={{ position: 'absolute', bottom: '2.5%', right: '2.5%' }}>
               Price ${price}/night
