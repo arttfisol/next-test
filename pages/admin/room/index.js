@@ -272,11 +272,13 @@ export default function ButtonAppBar () {
                     <Grid item xs={3} key={index}>
                       <RoomContainer
                         RoomNumber={seletedRoom.room_number}
-                        type={seletedRoom.type_name}
+                        typeName={seletedRoom.type_name}
+                        typeId={seletedRoom.type_id}
                         price={numberWithCommas(seletedRoom.price)}
                         branchId={seletedRoom.branch_id}
                         branchName={seletedRoom.branch_name}
                         setRooms={setRooms}
+                        roomTypes={roomTypes}
                       />
                     </Grid>
                   )
