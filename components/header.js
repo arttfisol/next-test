@@ -70,7 +70,7 @@ export default function Header () {
               'aria-labelledby': 'basic-button'
             }}
           >
-            <MenuItem onClick={handleClose}>Profile</MenuItem>
+            <MenuItem onClick={handleClose}>My Booking</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
         </Grid>

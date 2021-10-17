@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react'
 import { Grid, FormControl, InputLabel, Select, MenuItem, Snackbar, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material'
 import axios from 'axios'
-import { forEach } from 'lodash'
+import { forEach, find, get } from 'lodash'
 import Menu from '../../../components/menu'
+import Router from 'next/router'
 
 export default function ButtonAppBar () {
   const [booking, setBooking] = useState([])
   const [selectedBooking, setSelectedBooking] = useState([])
   const [branch, setBranch] = useState([])
-  const [selectedBranch, setSelectedBranch] = useState({})
+  const [selectedBranch, setSelectedBranch] = useState({
+    branch_id: 0,
+    branch_name: ''
+  })
 
   const [alert, setAlert] = useState(false)
   const [alertContent, setAlertContent] = useState('')
@@ -34,13 +38,19 @@ export default function ButtonAppBar () {
   useEffect(async () => {
     const sBooking = []
     await forEach(booking, element => {
-      element.branch === selectedBranch.branch_id && sBooking.push(element)
+      element.branch_id === selectedBranch.branch_id && sBooking.push(element)
     })
     setSelectedBooking([...sBooking])
   }, [selectedBranch, booking])
 
   useEffect(async () => {
     try {
+      const resCookie = await axios('/api/get-cookie')
+      const isAdmin = get(resCookie, 'data.cookies.is_admin', false) === 'true'
+      console.log('resCookie: ', resCookie.data)
+      if (!isAdmin) {
+        return Router.push('/login')
+      }
       if (!branch.length) {
         let resBranch = await axios('/api/branch')
         resBranch = resBranch.data
@@ -56,10 +66,11 @@ export default function ButtonAppBar () {
             resBooking = resBooking.data
             if (resBooking.is_success) {
               await forEach(resBooking.data, element => {
+                element.room_number = element.room_number.join(', ')
+                element.check_in = element.check_in.split('T')[0]
+                element.check_out = element.check_out.split('T')[0]
                 setBooking(previousBooking => [...previousBooking, element])
                 if (element.branch_id === sBranch.branch_id) {
-                  element.check_in = element.check_in.split('T')[0]
-                  element.check_out = element.check_out.split('T')[0]
                   setSelectedBooking(previousBooking => [...previousBooking, element])
                 }
               })
@@ -81,12 +92,13 @@ export default function ButtonAppBar () {
   }, [])
 
   const handleBranchChange = (event) => {
-    setSelectedBranch(event.target.value)
+    const sBranch = find(branch, { branch_name: event.target.value })
+    setSelectedBranch({ branch_name: event.target.value, branch_id: sBranch.branch_id })
   }
+
   const columns = [
-    { id: 'id', label: 'ID', minWidth: 150 },
     { id: 'room_number', label: 'Room Number', minWidth: 200 },
-    { id: 'type_name', label: 'Room Type', minWidth: 200 },
+    { id: 'type_name', label: 'Type', minWidth: 200 },
     { id: 'check_in', label: 'Check In', minWidth: 200 },
     { id: 'check_out', label: 'Check Out', minWidth: 200 },
     { id: 'email', label: 'E-mail', minWidth: 200 }
@@ -104,14 +116,14 @@ export default function ButtonAppBar () {
             <Select
               labelId='input-branch-label'
               id='input-branch'
-              value={selectedBranch}
+              value={selectedBranch.branch_name}
               label='Branch'
               onChange={handleBranchChange}
             >
               {
                   branch.map((branch, index) => {
                     return (
-                      <MenuItem value={branch.name} key={index}>{branch.name}</MenuItem>
+                      <MenuItem value={branch.branch_name} key={index}>{branch.branch_name}</MenuItem>
                     )
                   })
                 }
@@ -157,7 +169,7 @@ export default function ButtonAppBar () {
           <TablePagination
             rowsPerPageOptions={[10, 25, 100]}
             component='div'
-            count={booking.length}
+            count={selectedBooking.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

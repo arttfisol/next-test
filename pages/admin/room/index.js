@@ -5,8 +5,9 @@ import 'react-perfect-scrollbar/dist/css/styles.css'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import Menu from '../../../components/menu'
 import axios from 'axios'
-import { forEach, find, isEmpty } from 'lodash'
+import { forEach, find, isEmpty, get } from 'lodash'
 import RoomContainer from '../../../components/roomContainer'
+import Router from 'next/router'
 
 export default function ButtonAppBar () {
   const [rooms, setRooms] = useState([])
@@ -59,6 +60,11 @@ export default function ButtonAppBar () {
 
   useEffect(async () => {
     try {
+      const resCookie = await axios('/api/get-cookie')
+      const isAdmin = get(resCookie, 'data.cookies.is_admin', false) === 'true'
+      if (!isAdmin) {
+        return Router.push('/login')
+      }
       if (!roomTypes.length) {
         let resRoomTypes = await axios('/api/room-types')
         resRoomTypes = resRoomTypes.data

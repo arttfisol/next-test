@@ -37,7 +37,13 @@ const cookieOptions = {
 
 const queryCommands = {
   getRooms: 'SELECT r.id, r.room_number, r.type_id, t.type_name, r.branch_id,b.branch_name, t.price, t.detail FROM room r LEFT JOIN rtype t ON r.type_id = t.type_id LEFT JOIN branch b ON r.branch_id = b.branch_id',
-  checkRooms: 'SELECT book.id, book.room_number, room.type_name, book.branch_id, room.branch_name, book.check_in, book.check_out, book.email FROM booking book LEFT JOIN ( SELECT r.id, r.room_number, r.type_id, t.type_name, r.branch_id,b.branch_name, t.price, t.detail FROM room r LEFT JOIN rtype t ON r.type_id = t.type_id LEFT JOIN branch b ON r.branch_id = b.branch_id) room ON book.room_number = room.room_number AND book.branch_id = room.branch_id'
+  getBooking: 'SELECT book.id, book.room_number, room.type_id, room.type_name, book.branch_id, room.branch_name, book.check_in, book.check_out, book.email, room.price FROM booking book LEFT JOIN ( SELECT r.id, r.room_number, r.type_id, t.type_name, r.branch_id,b.branch_name, t.price, t.detail FROM room r LEFT JOIN rtype t ON r.type_id = t.type_id LEFT JOIN branch b ON r.branch_id = b.branch_id) room ON book.room_number = room.room_number AND book.branch_id = room.branch_id'
+}
+
+const now = new Date()
+const changeDate = (date) => {
+  const offset = now.getTimezoneOffset() * 60000
+  return new Date(date.getTime() - offset).toISOString()
 }
 
 appNext.prepare().then(async () => {
@@ -96,11 +102,33 @@ appNext.prepare().then(async () => {
 
   app.get('/api/booking', (req, res) => {
     try {
-      sql.query('SELECT * FROM booking', function (err, results) {
+      const where = req.query.email ? ` WHERE email= '${req.query.email}'` : ''
+      sql.query(`${queryCommands.getBooking}${where} ORDER by check_in DESC`, async function (err, results) {
         if (err) throw err
+        const filteredBooking = []
+        await _.forEach(results, (booking) => {
+          console.log('booking: ', booking)
+          if (!_.find(filteredBooking, { check_in: changeDate(booking.check_in), check_out: changeDate(booking.check_out), email: booking.email, branch_id: booking.branch_id, type_id: booking.type_id })) {
+            filteredBooking.push({
+              room_number: [booking.room_number],
+              check_in: changeDate(booking.check_in),
+              check_out: changeDate(booking.check_out),
+              branch_id: booking.branch_id,
+              branch_name: booking.branch_name,
+              type_id: booking.type_id,
+              type_name: booking.type_name,
+              email: booking.email,
+              price: booking.price
+            })
+          } else {
+            const indexFound = _.findIndex(filteredBooking, { check_in: changeDate(booking.check_in), check_out: changeDate(booking.check_out), email: booking.email, branch_id: booking.branch_id, type_id: booking.type_id })
+            filteredBooking[indexFound].room_number = [...filteredBooking[indexFound].room_number, booking.room_number]
+            filteredBooking[indexFound].price += booking.price
+          }
+        })
         res.json({
           is_success: true,
-          data: results
+          data: filteredBooking
         })
       })
     } catch (err) {
@@ -117,7 +145,7 @@ appNext.prepare().then(async () => {
       console.log('que ', que)
       sql.query(`${queryCommands.getRooms} WHERE r.branch_id= '${que.branch_id}'`, function (err, allRooms) {
         if (err) throw err
-        sql.query(`${queryCommands.checkRooms} WHERE ( book.check_in <= date_format('${que.check_in}', '%Y-%m-%d') AND book.check_out > date_format('${que.check_in}', '%Y-%m-%d') ) OR ( book.check_in >= date_format('${que.check_in}', '%Y-%m-%d') AND book.check_in < date_format('${que.check_out}', '%Y-%m-%d') )`, async (err, unAvailable) => {
+        sql.query(`${queryCommands.getBooking} WHERE ( book.check_in <= date_format('${que.check_in}', '%Y-%m-%d') AND book.check_out > date_format('${que.check_in}', '%Y-%m-%d') ) OR ( book.check_in >= date_format('${que.check_in}', '%Y-%m-%d') AND book.check_in < date_format('${que.check_out}', '%Y-%m-%d') )`, async (err, unAvailable) => {
           if (err) throw err
           console.log('allRooms before: ', allRooms)
           console.log('unAvailable : ', unAvailable)

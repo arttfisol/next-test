@@ -4,6 +4,7 @@ import { Stack, Button, Paper, InputLabel, OutlinedInput, FormControl, InputAdor
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import Router from 'next/router'
 import axios from 'axios'
+import { get } from 'lodash'
 
 export default function Pages () {
   const [values, setValues] = useState({
@@ -68,10 +69,14 @@ export default function Pages () {
       response = response.data
       await sleep(1500)
       if (response.is_success) {
-        if (values.email === 'test@gmail.com') {
-          Router.push('/admin/room')
+        const resCookie = await axios('/api/get-cookie')
+        if (!get(resCookie, 'data.cookies.email', false)) {
+          return Router.push('/login')
         }
-        Router.push('/home')
+        if (get(resCookie, 'data.cookies.is_admin', false) === 'true') {
+          return Router.push('/admin/room')
+        }
+        return Router.push('/home')
       } else {
         setOpenBackDrop(false)
         setAlert(true)
