@@ -32,6 +32,12 @@ export default function Header () {
     })
   }
 
+  const handleMyBooking = async () => {
+    setOpenBackDrop(true)
+    await sleep(1000)
+    Router.push('/mybooking')
+  }
+
   return (
     <Paper style={{ height: '10vh', textAlign: 'center' }} elevation={6}>
       <Backdrop
@@ -70,7 +76,7 @@ export default function Header () {
               'aria-labelledby': 'basic-button'
             }}
           >
-            <MenuItem onClick={handleClose}>My Booking</MenuItem>
+            <MenuItem onClick={handleMyBooking}>My Booking</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
         </Grid>
