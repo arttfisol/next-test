@@ -294,7 +294,6 @@ appNext.prepare().then(async () => {
   app.put('/api/room', (req, res) => {
     try {
       const body = req.body
-
       sql.query(`UPDATE room SET room_number='${body.room_number}', type_id=${body.type_id} WHERE room_number='${body.old_room_number}' AND branch_id=${body.branch_id}`, function (err, result) {
         if (err) throw err
         console.log(`Update Room Number (Old) ${body.old_room_number} Branch ${body.branch_id} Success`)
