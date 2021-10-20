@@ -153,7 +153,7 @@ appNext.prepare().then(async () => {
       console.log('que ', que)
       sql.query(`${queryCommands.getRooms} WHERE r.branch_id= '${que.branch_id}'`, function (err, allRooms) {
         if (err) throw err
-        sql.query(`${queryCommands.getBooking} WHERE ( DATE_FORMAT(CONVERT_TZ(book.check_in, '+00:00' , ${numTz}), '%Y-%m-%d') <= DATE_FORMAT('${que.check_in}', '%Y-%m-%d') AND DATE_FORMAT(CONVERT_TZ(book.check_out, '+00:00' , ${numTz}), '%Y-%m-%d') > DATE_FORMAT('${que.check_in}', '%Y-%m-%d') ) OR ( DATE_FORMAT(CONVERT_TZ(book.check_in, '+00:00' , ${numTz}), '%Y-%m-%d') >= DATE_FORMAT('${que.check_in}', '%Y-%m-%d') AND DATE_FORMAT(CONVERT_TZ(book.check_in, '+00:00' , ${numTz}), '%Y-%m-%d') < DATE_FORMAT('${que.check_out}', '%Y-%m-%d') )`, async (err, unAvailable) => {
+        sql.query(`${queryCommands.getBooking} WHERE ( DATE_FORMAT(CONVERT_TZ(book.check_in, '+00:00' , '${numTz}'), '%Y-%m-%d') <= DATE_FORMAT('${que.check_in}', '%Y-%m-%d') AND DATE_FORMAT(CONVERT_TZ(book.check_out, '+00:00' , '${numTz}'), '%Y-%m-%d') > DATE_FORMAT('${que.check_in}', '%Y-%m-%d') ) OR ( DATE_FORMAT(CONVERT_TZ(book.check_in, '+00:00' , '${numTz}'), '%Y-%m-%d') >= DATE_FORMAT('${que.check_in}', '%Y-%m-%d') AND DATE_FORMAT(CONVERT_TZ(book.check_in, '+00:00' , '${numTz}'), '%Y-%m-%d') < DATE_FORMAT('${que.check_out}', '%Y-%m-%d') )`, async (err, unAvailable) => {
           if (err) throw err
           console.log('allRooms before: ', allRooms)
           console.log('unAvailable : ', unAvailable)
